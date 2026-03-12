@@ -1,4 +1,5 @@
 import { Input } from "./components/input";
+import { Messages } from "./components/messages";
 import { MessagesProvider } from "./context/messages";
 
 export function App() {
@@ -12,7 +13,7 @@ export function App() {
 function AppShell() {
   return (
     <box flexDirection="column">
-      <text>This is just a test</text>
+      <Messages />
       <Input />
     </box>
   );

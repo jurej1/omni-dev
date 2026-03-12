@@ -16,7 +16,7 @@ export namespace OpenRouterProvider {
     callback: (msg: Message) => void;
   }) {
     const result = openrouter.callModel({
-      model: "z-ai/glm-4.5-air:free",
+      model: "stepfun/step-3.5-flash:free",
       input: data,
       tools: tools,
     });
