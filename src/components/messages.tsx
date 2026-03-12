@@ -1,11 +1,21 @@
 import { For, Match, Switch } from "solid-js";
 import { useMessages } from "../context/messages";
+import { SyntaxStyle, RGBA } from "@opentui/core";
 import type {
   FunctionCallMessage,
   FunctionCallOutputMessage,
   MessageMessage,
   ReasoningMessage,
 } from "../messages";
+
+const syntaxStyle = SyntaxStyle.fromStyles({
+  "markup.heading.1": { fg: RGBA.fromHex("#58A6FF"), bold: true },
+  "markup.heading.2": { fg: RGBA.fromHex("#58A6FF"), bold: true },
+  "markup.heading.3": { fg: RGBA.fromHex("#58A6FF"), bold: true },
+  "markup.list": { fg: RGBA.fromHex("#FF7B72") },
+  "markup.raw": { fg: RGBA.fromHex("#A5D6FF") },
+  default: { fg: RGBA.fromHex("#E6EDF3") },
+});
 
 function TextMessage(props: { message: MessageMessage }) {
   const prefix = props.message.role === "user" ? "[user]" : "[assistant]";
@@ -15,7 +25,12 @@ function TextMessage(props: { message: MessageMessage }) {
       .map((c) => (c as { type: "output_text"; text: string }).text)
       .join("");
 
-  return <text>{`${prefix} ${text()}`}</text>;
+  return (
+    <box>
+      <text>{prefix}</text>
+      <markdown content={text()} syntaxStyle={syntaxStyle} />
+    </box>
+  );
 }
 
 function FunctionCallItem(props: { message: FunctionCallMessage }) {
