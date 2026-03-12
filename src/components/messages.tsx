@@ -31,11 +31,18 @@ function FunctionCallOutputItem(props: { message: FunctionCallOutputMessage }) {
 }
 
 function ReasoningItem(props: { message: ReasoningMessage }) {
-  const text = () =>
-    props.message.summary
+  const text = () => {
+    if (props.message.status === "completed") {
+      return props.message.content
+        .filter((c) => c.type === "reasoning_text")
+        .map((c) => (c as { type: "reasoning_text"; text: string }).text)
+        .join("");
+    }
+    return props.message.summary
       .filter((s) => s.type === "summary_text")
       .map((s) => (s as { type: "summary_text"; text: string }).text)
       .join("");
+  };
 
   return <text>{`[thinking] ${text()}`}</text>;
 }

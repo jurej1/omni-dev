@@ -3,12 +3,27 @@ import { tools } from "../tools";
 import { MessageStatus } from "../messages";
 import { Message } from "../context/messages";
 import { logger } from "../logger";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
 
 const openrouter = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
 });
 
-export namespace OpenRouterProvider {
+const RAW_OUTPUTS_DIR = join(process.cwd(), "raw-outputs");
+
+async function saveRawOutput(item: object): Promise<void> {
+  await mkdir(RAW_OUTPUTS_DIR, { recursive: true });
+  const timestamp = Date.now();
+  const filename = `${timestamp}.json`;
+  await writeFile(
+    join(RAW_OUTPUTS_DIR, filename),
+    JSON.stringify(item, null, 2),
+  );
+  logger.debug(`saved raw output: ${filename}`);
+}
+
+export namespace OpenRouterClient {
   export async function callModel({
     data,
     callback,
@@ -16,8 +31,8 @@ export namespace OpenRouterProvider {
     data: string;
     callback: (msg: Message) => void;
   }) {
-    const model = "stepfun/step-3.5-flash:free"
-    logger.log(`callModel: model=${model} inputLen=${data.length}`)
+    const model = "stepfun/step-3.5-flash:free";
+    logger.log(`callModel: model=${model} inputLen=${data.length}`);
 
     try {
       const result = openrouter.callModel({
@@ -27,7 +42,10 @@ export namespace OpenRouterProvider {
       });
 
       for await (const item of result.getItemsStream()) {
-        logger.debug(`stream item: type=${item.type}`)
+        logger.debug(`stream item: type=${item.type}`);
+        if (item.status === "completed") {
+          await saveRawOutput(item);
+        }
         switch (item.type) {
           case "message":
             callback({
@@ -54,6 +72,7 @@ export namespace OpenRouterProvider {
               id: item.id,
               summary: item.summary,
               status: item.status,
+              content: item.content,
             });
             break;
           case "function_call_output":
@@ -67,12 +86,9 @@ export namespace OpenRouterProvider {
             break;
         }
       }
-
-      const response = await result.getText();
-      return response;
     } catch (error) {
-      logger.error("callModel error:", error)
-      throw error
+      logger.error("callModel error:", error);
+      throw error;
     }
   }
 }

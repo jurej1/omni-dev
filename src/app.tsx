@@ -1,11 +1,14 @@
 import { Input } from "./components/input";
 import { Messages } from "./components/messages";
 import { MessagesProvider } from "./context/messages";
+import { OpenRouterProvider } from "./context/openrouter";
 
 export function App() {
   return (
     <MessagesProvider>
-      <AppShell />
+      <OpenRouterProvider>
+        <AppShell />
+      </OpenRouterProvider>
     </MessagesProvider>
   );
 }

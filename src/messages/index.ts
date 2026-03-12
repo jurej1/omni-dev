@@ -2,6 +2,7 @@ import {
   OpenAIResponsesRefusalContent$inboundSchema,
   ReasoningSummaryText$inboundSchema,
   ResponseOutputText$inboundSchema,
+  ReasoningTextContent$inboundSchema,
 } from "@openrouter/sdk/esm/models";
 import z from "zod";
 
@@ -40,6 +41,7 @@ export const ReasoningSchema = z.object({
   id: z.string(),
   summary: z.array(ReasoningSummaryText$inboundSchema),
   status: MessageStatusSchema.optional(),
+  content: z.array(ReasoningTextContent$inboundSchema),
 });
 
 export const FunctionCallOutputSchema = z.object({

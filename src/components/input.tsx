@@ -1,18 +1,10 @@
 import { createSignal } from "solid-js";
-import { OpenRouterProvider } from "../openrouter/openrouter";
-import { useMessages } from "../context/messages";
+import { useOpenRouter } from "../context/openrouter";
 
 export function Input() {
   const [value, setValue] = createSignal("");
 
-  const { addMessage } = useMessages();
-
-  const handleSubmit = async () => {
-    await OpenRouterProvider.callModel({
-      data: value(),
-      callback: addMessage,
-    });
-  };
+  const { callModel } = useOpenRouter();
 
   return (
     <box borderStyle="single">
@@ -20,7 +12,7 @@ export function Input() {
         focused={true}
         value={value()}
         onInput={setValue}
-        onSubmit={handleSubmit}
+        onSubmit={callModel}
       ></input>
     </box>
   );

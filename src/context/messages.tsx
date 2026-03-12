@@ -1,6 +1,7 @@
 import {
   createContext,
   createSignal,
+  onCleanup,
   ParentComponent,
   useContext,
 } from "solid-js";
@@ -32,6 +33,17 @@ export const MessagesProvider: ParentComponent = (props) => {
       );
     }
   };
+
+  onCleanup(async () => {
+    //DEBUG ONLY SAVE FILE LOCALLY TO JSON.
+    const current = messages();
+    if (current.length > 0) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const filename = `outputs/messages-${timestamp}.json`;
+      await Bun.write(filename, JSON.stringify(current, null, 2));
+      logger.debug("clearMessages: saved", filename);
+    }
+  });
 
   const clearMessages = () => {
     setMessages([]);
