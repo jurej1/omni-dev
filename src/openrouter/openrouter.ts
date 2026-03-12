@@ -1,6 +1,7 @@
 import { OpenRouter } from "@openrouter/sdk";
 import { tools } from "../tools";
-import { MessageItem, MessageStatus } from "../messages";
+import { MessageStatus } from "../messages";
+import { Message } from "../context/messages";
 
 const openrouter = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
@@ -12,7 +13,7 @@ export namespace OpenRouterProvider {
     callback,
   }: {
     data: string;
-    callback: (msg: MessageItem) => void;
+    callback: (msg: Message) => void;
   }) {
     const result = openrouter.callModel({
       model: "z-ai/glm-4.5-air:free",
@@ -27,7 +28,7 @@ export namespace OpenRouterProvider {
             type: item.type,
             id: item.id,
             role: item.role,
-            status: item.status as MessageStatus | undefined,
+            status: item.status,
             content: item.content,
           });
           break;
@@ -38,7 +39,7 @@ export namespace OpenRouterProvider {
             callId: item.callId,
             name: item.name,
             arguments: item.arguments,
-            status: item.status as MessageStatus | undefined,
+            status: item.status,
           });
           break;
         case "reasoning":
@@ -46,7 +47,7 @@ export namespace OpenRouterProvider {
             type: item.type,
             id: item.id,
             summary: item.summary,
-            status: item.status as MessageStatus | undefined,
+            status: item.status,
           });
           break;
         case "function_call_output":
@@ -60,5 +61,8 @@ export namespace OpenRouterProvider {
           break;
       }
     }
+
+    const response = await result.getText();
+    return response;
   }
 }

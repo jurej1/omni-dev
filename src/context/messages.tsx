@@ -1,4 +1,9 @@
-import { createContext, createSignal, ParentComponent } from "solid-js";
+import {
+  createContext,
+  createSignal,
+  ParentComponent,
+  useContext,
+} from "solid-js";
 import { type MessageItem } from "../messages";
 
 export type Message = MessageItem & { id: string };
@@ -34,4 +39,12 @@ export const MessagesProvider: ParentComponent = (props) => {
       {props.children}
     </MessagesContext.Provider>
   );
+};
+
+export const useMessages = () => {
+  const context = useContext(MessagesContext);
+  if (!context) {
+    throw new Error("useMessages must be used within a MessagesProvider");
+  }
+  return context;
 };
