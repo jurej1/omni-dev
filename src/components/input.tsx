@@ -1,13 +1,15 @@
 import { createSignal } from "solid-js";
-import { OpenRouterProvider } from "../openrouter";
+import { OpenRouterProvider } from "../openrouter/openrouter";
 
 export function Input() {
   const [value, setValue] = createSignal("");
-
   const [response, setResponse] = createSignal("");
 
   const handleSubmit = async () => {
-    const result = await OpenRouterProvider.callModel(value());
+    const result = await OpenRouterProvider.callModel({
+      data: value(),
+      callback: (msg) => {},
+    });
     setResponse(result);
   };
 
