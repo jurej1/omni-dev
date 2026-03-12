@@ -24,10 +24,8 @@ export const MessagesProvider: ParentComponent = (props) => {
   const addMessage = (message: Message) => {
     const doesContainMessage = messages().some((m) => m.id === message.id);
     if (!doesContainMessage) {
-      logger.debug("addMessage", message.status);
       setMessages((prev) => [...prev, message]);
     } else {
-      logger.debug("updateMessage", message.status);
       setMessages((prev) =>
         prev.map((m) => (m.id === message.id ? { ...m, ...message } : m)),
       );
