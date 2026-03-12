@@ -1,0 +1,17 @@
+{
+  "name": "omni-dev",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@opentui/core": "^0.1.87",
+    "openai": "^6.27.0",
+    "solid-js": "^1.9.11"
+  }
+}
