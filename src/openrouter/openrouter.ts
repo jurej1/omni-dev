@@ -1,10 +1,11 @@
-import { OpenRouter, fromChatMessages } from "@openrouter/sdk";
+import { OpenRouter } from "@openrouter/sdk";
 import { tools } from "../tools";
 import { MessageStatus } from "../messages";
 import { Message } from "../context/messages";
 import { logger } from "../logger";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
+import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
 
 const openrouter = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
@@ -27,9 +28,11 @@ export namespace OpenRouterClient {
   export async function callModel({
     data,
     callback,
+    onUsageData,
   }: {
     data: Message[];
     callback: (msg: Message) => void;
+    onUsageData: (data: OpenResponsesUsage) => void;
   }) {
     const model = "x-ai/grok-4.1-fast";
     logger.log(`callModel: model=${model} inputLen=${data.length}`);
@@ -101,6 +104,9 @@ export namespace OpenRouterClient {
             break;
         }
       }
+
+      const response = await result.getResponse();
+      onUsageData(response.usage);
     } catch (error) {
       logger.error("callModel error:", error);
       throw error;

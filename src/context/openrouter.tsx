@@ -7,10 +7,12 @@ import {
 import { useMessages } from "./messages";
 import { OpenRouterClient } from "../openrouter/openrouter";
 import type { Message } from "./messages";
+import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
 
 type OpenRouterContextValue = {
   callModel: (message: string) => void;
   isStreaming: () => boolean;
+  usage: () => OpenResponsesUsage | undefined;
 };
 
 export const OpenRouterContext = createContext<OpenRouterContextValue>();
@@ -18,6 +20,9 @@ export const OpenRouterContext = createContext<OpenRouterContextValue>();
 export const OpenRouterProvider: ParentComponent = (props) => {
   const { addMessage, messages } = useMessages();
   const [isStreaming, setIsStreaming] = createSignal(false);
+  const [usage, setUsage] = createSignal<OpenResponsesUsage | undefined>(
+    undefined,
+  );
 
   const callModel = async (newMessage: string) => {
     setIsStreaming(true);
@@ -31,16 +36,20 @@ export const OpenRouterProvider: ParentComponent = (props) => {
 
     addMessage(userMessage);
 
-    // Call model with full message history
-    await OpenRouterClient.callModel({
-      data: messages(),
-      callback: addMessage,
-    });
-
-    setIsStreaming(false);
+    try {
+      await OpenRouterClient.callModel({
+        data: messages(),
+        callback: addMessage,
+        onUsageData: setUsage,
+      });
+    } catch (error) {
+      console.error("Error calling model:", error);
+    } finally {
+      setIsStreaming(false);
+    }
   };
   return (
-    <OpenRouterContext.Provider value={{ callModel, isStreaming }}>
+    <OpenRouterContext.Provider value={{ callModel, isStreaming, usage }}>
       {props.children}
     </OpenRouterContext.Provider>
   );
