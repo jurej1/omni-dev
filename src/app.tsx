@@ -22,6 +22,7 @@ function AppShell() {
       width={"100%"}
       backgroundColor={"#171717"}
       padding={2}
+      margin={0}
     >
       <box flexDirection="column" height="100%" width={"auto"} gap={1}>
         <box flexGrow={1} height={"auto"} width={"100%"}>
@@ -32,7 +33,7 @@ function AppShell() {
         </box>
       </box>
 
-      <box width={"20%"} borderStyle="single">
+      <box width={"20%"} borderStyle="single" flexShrink={0}>
         <Sidepanel />
       </box>
     </box>
