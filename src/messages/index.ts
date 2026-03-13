@@ -14,6 +14,13 @@ export const MessageStatusSchema = z.enum([
 
 export type MessageStatus = z.infer<typeof MessageStatusSchema>;
 
+export const UserMessageSchema = z.object({
+  type: z.literal("message"),
+  id: z.string(),
+  role: z.literal("user"),
+  content: z.string(),
+});
+
 export const MessageSchema = z.object({
   type: z.literal("message"),
   id: z.string(),
@@ -57,6 +64,7 @@ export const MessageUnionSchema = z.union([
   FunctionCallSchema,
   ReasoningSchema,
   FunctionCallOutputSchema,
+  UserMessageSchema,
 ]);
 
 export type MessageItem = z.infer<typeof MessageUnionSchema>;
@@ -66,3 +74,5 @@ export type ReasoningMessage = z.infer<typeof ReasoningSchema>;
 export type FunctionCallOutputMessage = z.infer<
   typeof FunctionCallOutputSchema
 >;
+
+export type UserMessage = z.infer<typeof UserMessageSchema>;
