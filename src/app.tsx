@@ -23,11 +23,11 @@ function AppShell() {
       backgroundColor={"#171717"}
       padding={2}
     >
-      <box flexDirection="column" height="100%" width={"auto"} gap={2}>
+      <box flexDirection="column" height="100%" width={"auto"} gap={1}>
         <box flexGrow={1} height={"auto"} width={"100%"}>
           <Messages />
         </box>
-        <box flexShrink={1} width={"100%"}>
+        <box flexShrink={0} width={"100%"}>
           <Input />
         </box>
       </box>

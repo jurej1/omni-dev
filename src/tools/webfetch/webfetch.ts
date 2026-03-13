@@ -1,13 +1,13 @@
 import { tool } from "@openrouter/sdk";
 import { z } from "zod";
-import * as DESCRIPTION from "./webfetch.txt";
 
 const MAX_RESPONSE_SIZE = 5 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 export const webfetchTool = tool({
   name: "webfetch",
-  description: DESCRIPTION,
+  description:
+    "Fetch content from a URL and return it as text, markdown, or raw HTML.",
   inputSchema: z.object({
     url: z.string().describe("The URL to fetch content from"),
     format: z

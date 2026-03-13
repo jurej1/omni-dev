@@ -1,13 +1,13 @@
 import { tool } from "@openrouter/sdk";
 import { z } from "zod";
-import * as DESCRIPTION from "./websearch.txt";
 
 const EXA_MCP_URL = "https://mcp.exa.ai/mcp";
 const DEFAULT_NUM_RESULTS = 8;
 
 export const websearchTool = tool({
   name: "websearch",
-  description: DESCRIPTION,
+  description:
+    "Search the web using Exa and return relevant results with content.",
   inputSchema: z.object({
     query: z.string().describe("The search query"),
     numResults: z

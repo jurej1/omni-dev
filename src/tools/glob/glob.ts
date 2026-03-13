@@ -2,13 +2,13 @@ import { z } from "zod";
 
 import { resolve } from "node:path";
 import { files, tool } from "@openrouter/sdk";
-import * as DESCRIPTION from "./glob.txt";
 
 const LIMIT = 100;
 
 export const globTool = tool({
   name: "glob",
-  description: DESCRIPTION,
+  description:
+    "Fast file pattern matching. Returns matching file paths sorted by modification time.",
   inputSchema: z.object({
     pattern: z.string().describe("The glob pattern to match files against"),
     path: z
