@@ -1,5 +1,6 @@
 import { Input } from "./components/input";
 import { Messages } from "./components/messages";
+import { Sidepanel } from "./components/sidepanel";
 import { MessagesProvider } from "./context/messages";
 import { OpenRouterProvider } from "./context/openrouter";
 
@@ -16,17 +17,23 @@ export function App() {
 function AppShell() {
   return (
     <box
-      flexDirection="column"
-      height="100%"
+      flexDirection="row"
+      height={"100%"}
+      width={"100%"}
       backgroundColor={"#171717"}
-      width={"auto"}
-      paddingX={2}
+      padding={2}
     >
-      <box flexGrow={1} height={"90%"} width={"100%"}>
-        <Messages />
+      <box flexDirection="column" height="100%" width={"auto"} gap={2}>
+        <box flexGrow={1} height={"auto"} width={"100%"}>
+          <Messages />
+        </box>
+        <box flexShrink={1} width={"100%"}>
+          <Input />
+        </box>
       </box>
-      <box flexShrink={1} height={"10%"} width={"100%"}>
-        <Input />
+
+      <box width={"20%"} borderStyle="single">
+        <Sidepanel />
       </box>
     </box>
   );
