@@ -16,8 +16,12 @@ export function App() {
 function AppShell() {
   return (
     <box flexDirection="column">
-      <Messages />
-      <Input />
+      <box paddingX={2} flexGrow={1}>
+        <Messages />
+      </box>
+      <box flexShrink={1} height={3}>
+        <Input />
+      </box>
     </box>
   );
 }

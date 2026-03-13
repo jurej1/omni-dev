@@ -22,14 +22,19 @@ export const MessagesProvider: ParentComponent = (props) => {
   const [messages, setMessages] = createSignal<Message[]>([]);
 
   const addMessage = (message: Message) => {
-    const doesContainMessage = messages().some((m) => m.id === message.id);
-    if (!doesContainMessage) {
-      setMessages((prev) => [...prev, message]);
-    } else {
-      setMessages((prev) =>
-        prev.map((m) => (m.id === message.id ? { ...m, ...message } : m)),
-      );
-    }
+    setMessages((prev) => {
+      const existingIndex = prev.findIndex((m) => m.id === message.id);
+
+      if (existingIndex === -1) {
+        return [...prev, message];
+      }
+
+      const existing = prev[existingIndex];
+
+      const updated = [...prev];
+      updated[existingIndex] = { ...existing, ...message };
+      return updated;
+    });
   };
 
   onCleanup(async () => {

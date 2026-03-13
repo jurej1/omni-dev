@@ -48,6 +48,7 @@ export namespace OpenRouterClient {
         }
         switch (item.type) {
           case "message":
+            logger.debug(`message:`, item.content);
             callback({
               type: item.type,
               id: item.id,

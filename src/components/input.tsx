@@ -7,7 +7,7 @@ export function Input() {
   const { callModel } = useOpenRouter();
 
   return (
-    <box borderStyle="single">
+    <box borderStyle="single" flexShrink={1}>
       <input
         focused={true}
         value={value()}
