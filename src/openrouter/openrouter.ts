@@ -106,6 +106,7 @@ export namespace OpenRouterClient {
       }
 
       const response = await result.getResponse();
+      logger.log("Setting useag", response.usage);
       onUsageData(response.usage);
     } catch (error) {
       logger.error("callModel error:", error);
