@@ -151,7 +151,7 @@ export function Messages() {
   const { messages } = useMessages();
 
   return (
-    <scrollbox>
+    <scrollbox flexGrow={1}>
       <For each={messages()}>
         {(message) => {
           const component = createMemo(() => {

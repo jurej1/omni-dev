@@ -20,12 +20,11 @@ export function Input() {
   };
 
   return (
-    <box borderStyle="single" flexShrink={1}>
+    <box borderStyle="single" margin={0} padding={0}>
       <textarea
         focused={true}
         placeholder={PLACEHOLDERS[0]}
         minHeight={1}
-        maxHeight={6}
         onSubmit={submit}
         onMouseDown={(e) => e.target.focus()}
         ref={input}
