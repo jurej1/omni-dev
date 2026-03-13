@@ -1,6 +1,13 @@
-import { For, Match, Switch, createMemo, Show, JSX } from "solid-js";
+import { For, createMemo, Show } from "solid-js";
 import { useMessages } from "../context/messages";
-import { SyntaxStyle, RGBA } from "@opentui/core";
+import {
+  SyntaxStyle,
+  RGBA,
+  createTextAttributes,
+  ScrollBoxRenderable,
+} from "@opentui/core";
+
+const bold = createTextAttributes({ bold: true });
 
 import type {
   FunctionCallMessage,
@@ -63,13 +70,31 @@ function TextMessage(props: { message: MessageMessage }) {
 }
 
 function UserMessage(props: { message: UserMessage }) {
-  const prefix = props.message.role === "user" ? "[user]" : "[assistant]";
-
   return (
-    <text paddingLeft={3} fg={theme.textMuted}>
-      {prefix}
-      {props.message.content}
-    </text>
+    <box
+      id={"user-" + (props.message as any).id}
+      border={["right"]}
+      paddingX={2}
+      paddingY={1}
+      marginTop={1}
+      flexShrink={0}
+      backgroundColor={theme.backgroundPanel}
+      borderColor="#58A6FF"
+      gap={1}
+    >
+      <text fg="#79C0FF" attributes={bold}>
+        👤 You:
+      </text>
+      <Show when={props.message.content.trim()}>
+        <code
+          drawUnstyledText={false}
+          filetype="markdown"
+          syntaxStyle={syntaxStyle}
+          content={props.message.content}
+          fg={theme.text}
+        />
+      </Show>
+    </box>
   );
 }
 
@@ -160,8 +185,10 @@ function ReasoningItem(props: { message: ReasoningMessage }) {
 export function Messages() {
   const { messages } = useMessages();
 
+  let scroll: ScrollBoxRenderable;
+
   return (
-    <scrollbox flexGrow={1}>
+    <scrollbox flexGrow={1} ref={(r) => (scroll = r)}>
       <For each={messages()}>
         {(message) => {
           const component = createMemo(() => {

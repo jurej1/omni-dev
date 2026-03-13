@@ -20,8 +20,9 @@ function AppShell() {
       height="100%"
       backgroundColor={"#171717"}
       width={"auto"}
+      paddingX={2}
     >
-      <box paddingX={2} flexGrow={1} height={"90%"} width={"100%"}>
+      <box flexGrow={1} height={"90%"} width={"100%"}>
         <Messages />
       </box>
       <box flexShrink={1} height={"10%"} width={"100%"}>
