@@ -7,6 +7,7 @@ import type {
   FunctionCallOutputMessage,
   MessageMessage,
   ReasoningMessage,
+  UserMessage,
 } from "../messages";
 import { Dynamic } from "@opentui/solid";
 
@@ -33,8 +34,6 @@ const theme = {
 
 // Text message component with nice formatting
 function TextMessage(props: { message: MessageMessage }) {
-  const prefix = props.message.role === "user" ? "[user]" : "[assistant]";
-
   const text = createMemo(() =>
     props.message.content
       .filter((c) => c.type === "output_text")
@@ -60,6 +59,17 @@ function TextMessage(props: { message: MessageMessage }) {
         />
       </box>
     </Show>
+  );
+}
+
+function UserMessage(props: { message: UserMessage }) {
+  const prefix = props.message.role === "user" ? "[user]" : "[assistant]";
+
+  return (
+    <text paddingLeft={3} fg={theme.textMuted}>
+      {prefix}
+      {props.message.content}
+    </text>
   );
 }
 
@@ -156,8 +166,13 @@ export function Messages() {
         {(message) => {
           const component = createMemo(() => {
             switch (message.type) {
-              case "message":
-                return TextMessage;
+              case "message": {
+                if (message.role === "user") {
+                  return UserMessage;
+                } else {
+                  return TextMessage;
+                }
+              }
               case "function_call":
                 return FunctionCallItem;
               case "function_call_output":

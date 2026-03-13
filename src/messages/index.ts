@@ -24,7 +24,7 @@ export const UserMessageSchema = z.object({
 export const MessageSchema = z.object({
   type: z.literal("message"),
   id: z.string(),
-  role: z.enum(["user", "assistant"]),
+  role: z.literal("assistant"),
   status: MessageStatusSchema.optional(),
   content: z.array(
     z.union([

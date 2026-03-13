@@ -1,4 +1,4 @@
-import { OpenRouter } from "@openrouter/sdk";
+import { OpenRouter, fromChatMessages } from "@openrouter/sdk";
 import { tools } from "../tools";
 import { MessageStatus } from "../messages";
 import { Message } from "../context/messages";
@@ -28,7 +28,7 @@ export namespace OpenRouterClient {
     data,
     callback,
   }: {
-    data: string;
+    data: Message[];
     callback: (msg: Message) => void;
   }) {
     const model = "stepfun/step-3.5-flash:free";
@@ -37,7 +37,21 @@ export namespace OpenRouterClient {
     try {
       const result = openrouter.callModel({
         model,
-        input: data,
+        input: data
+          .filter((msg) => msg.type === "message")
+          .map((msg) => {
+            if (msg.role === "user") {
+              return { role: msg.role, content: msg.content };
+            } else {
+              return {
+                role: msg.role,
+                content: msg.content
+                  .filter((m) => m.type === "output_text")
+                  .map((m) => m.text)
+                  .join(""),
+              };
+            }
+          }),
         tools: tools,
       });
 
