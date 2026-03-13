@@ -182,7 +182,12 @@ export function Messages() {
   let scroll: ScrollBoxRenderable;
 
   return (
-    <scrollbox flexGrow={1} ref={(r) => (scroll = r)}>
+    <scrollbox
+      flexGrow={1}
+      ref={(r) => (scroll = r)}
+      stickyScroll={true}
+      stickyStart="bottom"
+    >
       <For each={messages()}>
         {(message) => {
           const component = createMemo(() => {
