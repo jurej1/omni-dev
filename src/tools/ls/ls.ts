@@ -3,6 +3,7 @@ import { z } from "zod";
 import { readdir } from "node:fs/promises";
 import { join, resolve, basename, dirname } from "node:path";
 import { tool } from "@openrouter/sdk";
+import * as DESCRIPTION from "./ls.txt";
 
 const IGNORE_PATTERNS = new Set([
   "node_modules",
@@ -34,8 +35,7 @@ const LIMIT = 100;
 
 export const listTool = tool({
   name: "list",
-  description:
-    "List files in a directory as a tree structure, ignoring common build/cache directories.",
+  description: DESCRIPTION,
   inputSchema: z.object({
     path: z
       .string()

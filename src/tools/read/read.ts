@@ -1,18 +1,173 @@
 import { tool } from "@openrouter/sdk";
 import z from "zod";
+import * as path from "path";
+import { createReadStream, statSync } from "fs";
+import { createInterface } from "readline";
+import * as DESCRIPTION from "./read.txt";
+
+const DEFAULT_READ_LIMIT = 2000;
+const MAX_LINE_LENGTH = 2000;
+const MAX_LINE_SUFFIX = `... (line truncated to ${MAX_LINE_LENGTH} chars)`;
+const MAX_BYTES = 50 * 1024;
+const MAX_BYTES_LABEL = `${MAX_BYTES / 1024} KB`;
 
 export const readTool = tool({
   name: "read",
-  description: "Read the contents of a file",
+  description: DESCRIPTION,
   inputSchema: z.object({
-    filePath: z.string().describe("The absolute path to the file to read"),
+    filePath: z
+      .string()
+      .describe("The absolute path to the file or directory to read"),
+    offset: z.coerce
+      .number()
+      .describe("The line number to start reading from (1-indexed)")
+      .optional(),
+    limit: z.coerce
+      .number()
+      .describe("The maximum number of lines to read (defaults to 2000)")
+      .optional(),
   }),
-  outputSchema: z.object({
-    text: z.string().describe("The contents of the file"),
-  }),
-  execute: async ({ filePath }) => {
-    const file = Bun.file(filePath);
-    const text = await file.text();
-    return { text: text };
+
+  execute: async ({ filePath, offset, limit }) => {
+    if (offset !== undefined && offset < 1) {
+      throw new Error("Offset must be greater than or equal to 1");
+    }
+
+    if (!path.isAbsolute(filePath)) {
+      throw new Error("File path must be absolute");
+    }
+
+    const title = path.relative(process.cwd(), filePath);
+    const stat = statSync(filePath, { throwIfNoEntry: false });
+
+    if (!stat) {
+      throw new Error(`File not found: ${filePath}`);
+    }
+
+    if (stat.isDirectory()) {
+      // Simple directory listing
+      const fs = await import("fs/promises");
+      const dirents = await fs.readdir(filePath, { withFileTypes: true });
+      const entries = dirents.map((dirent) => {
+        if (dirent.isDirectory()) return dirent.name + "/";
+        return dirent.name;
+      });
+      entries.sort((a, b) => a.localeCompare(b));
+
+      const limitVal = limit ?? DEFAULT_READ_LIMIT;
+      const offsetVal = offset ?? 1;
+      const start = offsetVal - 1;
+      const sliced = entries.slice(start, start + limitVal);
+      const truncated = start + sliced.length < entries.length;
+
+      const output = [
+        `<path>${filePath}</path>`,
+        `<type>directory</type>`,
+        `<entries>`,
+        sliced.join("\n"),
+        truncated
+          ? `\n(Showing ${sliced.length} of ${entries.length} entries. Use 'offset' parameter to read beyond entry ${offsetVal + sliced.length})`
+          : `\n(${entries.length} entries)`,
+        `</entries>`,
+      ].join("\n");
+
+      return {
+        title,
+        output,
+        metadata: {
+          preview: sliced.slice(0, 20).join("\n"),
+          truncated,
+          loaded: [] as string[],
+        },
+      };
+    }
+
+    // File reading
+    const stream = createReadStream(filePath, { encoding: "utf8" });
+    const rl = createInterface({
+      input: stream,
+      crlfDelay: Infinity,
+    });
+
+    const limitVal = limit ?? DEFAULT_READ_LIMIT;
+    const offsetVal = offset ?? 1;
+    const start = offsetVal - 1;
+    const raw: string[] = [];
+    let bytes = 0;
+    let lines = 0;
+    let truncatedByBytes = false;
+    let hasMoreLines = false;
+
+    try {
+      for await (const text of rl) {
+        lines += 1;
+        if (lines <= start) continue;
+
+        if (raw.length >= limitVal) {
+          hasMoreLines = true;
+          continue;
+        }
+
+        const line =
+          text.length > MAX_LINE_LENGTH
+            ? text.substring(0, MAX_LINE_LENGTH) + MAX_LINE_SUFFIX
+            : text;
+        const size =
+          Buffer.byteLength(line, "utf-8") + (raw.length > 0 ? 1 : 0);
+        if (bytes + size > MAX_BYTES) {
+          truncatedByBytes = true;
+          hasMoreLines = true;
+          break;
+        }
+
+        raw.push(line);
+        bytes += size;
+      }
+    } finally {
+      rl.close();
+      stream.destroy();
+    }
+
+    if (lines < offsetVal && !(lines === 0 && offsetVal === 1)) {
+      throw new Error(
+        `Offset ${offsetVal} is out of range for this file (${lines} lines)`,
+      );
+    }
+
+    const content = raw.map((line, index) => {
+      return `${index + offsetVal}: ${line}`;
+    });
+    const preview = raw.slice(0, 20).join("\n");
+
+    let output = [
+      `<path>${filePath}</path>`,
+      `<type>file</type>`,
+      "<content>",
+    ].join("\n");
+    output += content.join("\n");
+
+    const totalLines = lines;
+    const lastReadLine = offsetVal + raw.length - 1;
+    const nextOffset = lastReadLine + 1;
+    const truncated = hasMoreLines || truncatedByBytes;
+
+    if (truncatedByBytes) {
+      output += `\n\n(Output capped at ${MAX_BYTES_LABEL}. Showing lines ${offsetVal}-${lastReadLine}. Use offset=${nextOffset} to continue.)`;
+    } else if (hasMoreLines) {
+      output += `\n\n(Showing lines ${offsetVal}-${lastReadLine} of ${totalLines}. Use offset=${nextOffset} to continue.)`;
+    } else {
+      output += `\n\n(End of file - total ${totalLines} lines)`;
+    }
+    output += "\n</content>";
+
+    return {
+      title,
+      output,
+      metadata: {
+        preview,
+        truncated,
+        loaded: [] as string[],
+      },
+    };
   },
 });

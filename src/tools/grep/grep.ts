@@ -1,14 +1,14 @@
 import { z } from "zod";
 import { resolve } from "node:path";
 import { tool } from "@openrouter/sdk";
+import * as DESCRIPTION from "./grep.txt";
 
 const MAX_LINE_LENGTH = 2000;
 const LIMIT = 100;
 
 export const grepTool = tool({
   name: "grep",
-  description:
-    "Search file contents using a regex pattern. Returns matching file paths and line numbers.",
+  description: DESCRIPTION,
   inputSchema: z.object({
     pattern: z
       .string()

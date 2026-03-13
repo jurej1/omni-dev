@@ -1,11 +1,11 @@
 import { tool } from "@openrouter/sdk";
 import { resolve } from "path";
 import z from "zod";
+import * as DESCRIPTION from "./edit.txt";
 
 export const editTool = tool({
   name: "edit",
-  description:
-    "Perform exact string replacement in a file. Replaces oldString with newString. The match must be unique unless replaceAll is true.",
+  description: DESCRIPTION,
   inputSchema: z.object({
     filePath: z.string().describe("The absolute path to the file to modify"),
     oldString: z.string().describe("The text to replace"),

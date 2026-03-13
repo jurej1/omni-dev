@@ -1,5 +1,5 @@
 import { tool } from "@openrouter/sdk";
-import { spawn } from "bun";
+import * as DESCRIPTION from "./bash.txt";
 
 import z from "zod";
 
@@ -7,7 +7,7 @@ const DEFAULT_TIMEOUT_MS = 30000;
 
 export const bashTool = tool({
   name: "bash",
-  description: "Execute bash commands on the user's machine",
+  description: DESCRIPTION,
   inputSchema: z.object({
     command: z.string().describe("Shell command to execute"),
     timeoutMs: z

@@ -3,10 +3,11 @@ import { z } from "zod";
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { tool } from "@openrouter/sdk";
+import * as DESCRIPTION from "./write.txt";
 
 export const writeTool = tool({
   name: "write",
-  description: "Write content to a file, creating parent directories as needed",
+  description: DESCRIPTION,
   inputSchema: z.object({
     filePath: z.string().describe("Absolute or relative path to write to"),
     content: z.string().describe("Content to write to the file"),
