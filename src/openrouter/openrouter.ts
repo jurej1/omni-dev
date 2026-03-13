@@ -31,7 +31,7 @@ export namespace OpenRouterClient {
     data: Message[];
     callback: (msg: Message) => void;
   }) {
-    const model = "stepfun/step-3.5-flash:free";
+    const model = "x-ai/grok-4.1-fast";
     logger.log(`callModel: model=${model} inputLen=${data.length}`);
 
     try {

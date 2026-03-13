@@ -151,16 +151,10 @@ function FunctionCallOutputItem(props: { message: FunctionCallOutputMessage }) {
 // Reasoning item with nice formatting
 function ReasoningItem(props: { message: ReasoningMessage }) {
   const content = createMemo(() => {
-    const text =
-      props.message.status === "completed"
-        ? props.message.content
-            .filter((c) => c.type === "reasoning_text")
-            .map((c) => (c as { type: "reasoning_text"; text: string }).text)
-            .join("")
-        : props.message.summary
-            .filter((s) => s.type === "summary_text")
-            .map((s) => (s as { type: "summary_text"; text: string }).text)
-            .join("");
+    const text = props.message.summary
+      .filter((s) => s.type === "summary_text")
+      .map((s) => (s as { type: "summary_text"; text: string }).text)
+      .join("");
     return `[thinking] ${text}`;
   });
 
