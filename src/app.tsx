@@ -3,12 +3,15 @@ import { Messages } from "./components/messages";
 import { Sidepanel } from "./components/sidepanel";
 import { MessagesProvider } from "./context/messages";
 import { OpenRouterProvider } from "./context/openrouter";
+import { AutocompleteProvider } from "./context/autocomplete";
 
 export function App() {
   return (
     <MessagesProvider>
       <OpenRouterProvider>
-        <AppShell />
+        <AutocompleteProvider>
+          <AppShell />
+        </AutocompleteProvider>
       </OpenRouterProvider>
     </MessagesProvider>
   );

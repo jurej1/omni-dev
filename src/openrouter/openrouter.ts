@@ -6,6 +6,7 @@ import { logger } from "../logger";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
+import { SystemPrompt } from "../utils/system";
 
 const openrouter = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
@@ -34,12 +35,14 @@ export namespace OpenRouterClient {
     callback: (msg: Message) => void;
     onUsageData: (data: OpenResponsesUsage) => void;
   }) {
-    const model = "x-ai/grok-4.1-fast";
+    const model = "arcee-ai/trinity-large-preview:free";
     logger.log(`callModel: model=${model} inputLen=${data.length}`);
 
     try {
       const result = openrouter.callModel({
         model,
+        instructions: SystemPrompt.instructions(),
+        parallelToolCalls: true,
         input: [
           {
             role: "system",
@@ -64,16 +67,12 @@ export namespace OpenRouterClient {
         tools: tools,
       });
 
-      const callIdToName = new Map<string, string>();
-
       for await (const item of result.getItemsStream()) {
-        logger.debug(`stream item: type=${item.type}`);
         if (item.status === "completed") {
           await saveRawOutput(item);
         }
         switch (item.type) {
           case "message":
-            logger.debug(`message:`, item.content);
             callback({
               type: item.type,
               id: item.id,
@@ -91,7 +90,7 @@ export namespace OpenRouterClient {
               arguments: item.arguments,
               status: item.status,
             });
-            callIdToName.set(item.callId, item.name);
+
             break;
           case "reasoning":
             callback({
@@ -103,26 +102,12 @@ export namespace OpenRouterClient {
             });
             break;
           case "function_call_output": {
-            let metadata: Record<string, unknown> | undefined;
-            try {
-              const parsed = JSON.parse(item.output);
-              if (parsed && typeof parsed === "object" && parsed.metadata) {
-                metadata = parsed.metadata as Record<string, unknown>;
-              }
-            } catch {
-              // non-JSON output — metadata stays undefined
-            }
-            const toolName = callIdToName.get(item.callId);
-            if (toolName) {
-              metadata = { ...(metadata ?? {}), name: toolName };
-            }
             callback({
               type: item.type,
               id: item.id,
               callId: item.callId,
               output: item.output,
               status: item.status as MessageStatus | undefined,
-              ...(metadata !== undefined && { metadata }),
             });
             break;
           }
@@ -130,7 +115,6 @@ export namespace OpenRouterClient {
       }
 
       const response = await result.getResponse();
-      logger.log("Setting usage", response.usage);
       if (response.usage) {
         onUsageData(response.usage);
       }

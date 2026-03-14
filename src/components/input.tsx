@@ -1,6 +1,16 @@
-import { createSignal, onCleanup, Show } from "solid-js";
+import {
+  createSignal,
+  onCleanup,
+  Show,
+} from "solid-js";
 import { useOpenRouter } from "../context/openrouter";
-import { TextareaRenderable, createTextAttributes } from "@opentui/core";
+import { useAutocomplete } from "../context/autocomplete";
+import {
+  TextareaRenderable,
+  createTextAttributes,
+  KeyEvent,
+} from "@opentui/core";
+import { FileAutocomplete } from "./autocomplete";
 
 const PLACEHOLDERS = [
   "Fix a TODO in the codebase",
@@ -51,13 +61,132 @@ export function Input() {
   let input: TextareaRenderable;
 
   const { callModel, isStreaming } = useOpenRouter();
+  const {
+    autocompleteVisible,
+    setAutocompleteVisible,
+    autocompleteIndex,
+    setAutocompleteIndex,
+    autocompleteQuery,
+    setAutocompleteQuery,
+    selectedIndex,
+    setSelectedIndex,
+    mentionedFiles,
+    setMentionedFiles,
+    filteredOptions,
+  } = useAutocomplete();
+
+  const handleContentChange = () => {
+    const text = input.plainText;
+    if (autocompleteVisible()) {
+      const cursor = input.cursorOffset;
+      if (cursor <= autocompleteIndex()) {
+        setAutocompleteVisible(false);
+        return;
+      }
+      const between = text.slice(autocompleteIndex(), cursor);
+      if (between.match(/\s/)) {
+        setAutocompleteVisible(false);
+        return;
+      }
+      setAutocompleteQuery(between.slice(1));
+      return;
+    }
+
+    const cursor = input.cursorOffset;
+    if (cursor === 0) return;
+
+    const textBefore = text.slice(0, cursor);
+    const lastAtIndex = textBefore.lastIndexOf("@");
+    if (lastAtIndex === -1) return;
+
+    const between = textBefore.slice(lastAtIndex);
+    const before = lastAtIndex === 0 ? undefined : text[lastAtIndex - 1];
+
+    if ((before === undefined || /\s/.test(before)) && !between.match(/\s/)) {
+      setAutocompleteIndex(lastAtIndex);
+      setAutocompleteQuery(between.slice(1));
+      setSelectedIndex(0);
+      setAutocompleteVisible(true);
+    }
+  };
+
+  const handleKeyDown = (e: KeyEvent) => {
+    const name = e.name?.toLowerCase();
+
+    // Check for "@" key to trigger autocomplete
+    if (!autocompleteVisible() && name === "@") {
+      const cursor = input.cursorOffset;
+      const charBefore =
+        cursor === 0 ? undefined : input.getTextRange(cursor - 1, cursor);
+      const canTrigger =
+        charBefore === undefined || charBefore === "" || /\s/.test(charBefore);
+      if (canTrigger) {
+        setAutocompleteIndex(cursor);
+        setAutocompleteQuery("");
+        setSelectedIndex(0);
+        setAutocompleteVisible(true);
+      }
+      return;
+    }
+
+    if (!autocompleteVisible()) return;
+
+    const options = filteredOptions && filteredOptions();
+
+    if (name === "up") {
+      e.preventDefault();
+      setSelectedIndex((idx) => (idx === 0 ? options.length - 1 : idx - 1));
+      return;
+    }
+
+    if (name === "down") {
+      e.preventDefault();
+      setSelectedIndex((idx) => (idx === options.length - 1 ? 0 : idx + 1));
+      return;
+    }
+
+    if (name === "escape") {
+      e.preventDefault();
+      setAutocompleteVisible(false);
+      return;
+    }
+
+    if (name === "return" || name === "tab") {
+      e.preventDefault();
+      const selected = options[selectedIndex()];
+      if (selected) {
+        handleSelect(selected);
+      }
+      return;
+    }
+  };
+
+  const handleSelect = async (path: string) => {
+    const currentCursor = input.cursorOffset;
+    input.cursorOffset = autocompleteIndex();
+    const startCursor = input.logicalCursor;
+    input.cursorOffset = currentCursor;
+    const endCursor = input.logicalCursor;
+
+    input.deleteRange(
+      startCursor.row,
+      startCursor.col,
+      endCursor.row,
+      endCursor.col,
+    );
+    input.insertText("@" + path + " ");
+
+    setMentionedFiles((prev) => (prev.includes(path) ? prev : [...prev, path]));
+    setAutocompleteVisible(false);
+  };
 
   const submit = async () => {
     if (isStreaming()) return;
-    const value = input.plainText;
+    const rawText = input.plainText;
 
-    callModel(value);
+    callModel(rawText);
     input.clear();
+    setMentionedFiles([]);
   };
 
   return (
@@ -66,19 +195,33 @@ export function Input() {
       borderColor={isStreaming() ? "#38bdf8" : "#30363d"}
       margin={0}
       padding={0}
+      position="relative"
     >
       <Show
         when={isStreaming()}
         fallback={
-          <textarea
-            focused={true}
-            placeholder={PLACEHOLDERS[0]}
-            minHeight={1}
-            maxHeight={6}
-            onSubmit={submit}
-            onMouseDown={(e) => e.target.focus()}
-            ref={input}
-          ></textarea>
+          <>
+            <textarea
+              focused={true}
+              placeholder={PLACEHOLDERS[0]}
+              minHeight={1}
+              maxHeight={6}
+              onSubmit={submit}
+              onMouseDown={(e) => e.target.focus()}
+              onContentChange={handleContentChange}
+              onKeyDown={handleKeyDown}
+              ref={input}
+            ></textarea>
+            <Show when={autocompleteVisible()}>
+              <FileAutocomplete
+                visible={autocompleteVisible()}
+                options={filteredOptions()}
+                selectedIndex={selectedIndex()}
+                onSelect={handleSelect}
+                onDismiss={() => setAutocompleteVisible(false)}
+              />
+            </Show>
+          </>
         }
       >
         <ThinkingIndicator />
