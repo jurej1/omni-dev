@@ -345,16 +345,138 @@ function normalizePath(filepath: string): string {
   return filepath;
 }
 
-// Function call output item with nice formatting
-function FunctionCallOutputItem(props: { message: FunctionCallOutputMessage }) {
-  const content = createMemo(() => `[output] ${props.message.output}`);
-
-  const loadedPaths = createMemo(() => {
-    const loaded = props.message.metadata?.loaded;
-    if (!loaded || !Array.isArray(loaded)) return [];
-    return loaded.filter((p): p is string => typeof p === "string");
+function ReadOutput(props: { message: FunctionCallOutputMessage }) {
+  const loaded = createMemo(() => {
+    const val = props.message.metadata?.loaded;
+    if (!Array.isArray(val)) return [];
+    return val.filter((p): p is string => typeof p === "string");
   });
+  const truncated = createMemo(
+    () => props.message.metadata?.truncated === true,
+  );
+  return (
+    <ToolOutputBox
+      icon="→"
+      summary={
+        loaded().length > 0
+          ? `${normalizePath(loaded()[0])}${truncated() ? " (truncated)" : ""}`
+          : "reading..."
+      }
+    >
+      <For each={loaded()}>
+        {(filepath) => (
+          <box paddingLeft={3}>
+            <text paddingLeft={3} fg={theme.textMuted}>
+              ↳ Loaded {normalizePath(filepath)}
+            </text>
+          </box>
+        )}
+      </For>
+    </ToolOutputBox>
+  );
+}
 
+function BashOutput(props: { message: FunctionCallOutputMessage }) {
+  const result = createMemo(() =>
+    parseArgs<{ output?: string; exitCode?: number; timedOut?: boolean }>(
+      props.message.output,
+    ),
+  );
+  const summary = createMemo(() => {
+    if (result().timedOut) return "timed out";
+    const code = result().exitCode;
+    const preview = (result().output ?? "").slice(0, 60).replace(/\n/g, " ");
+    return `exit ${code ?? "?"} — ${preview || "(no output)"}`;
+  });
+  return <ToolOutputBox icon="$" summary={summary()} />;
+}
+
+function EditOutput(props: { message: FunctionCallOutputMessage }) {
+  const result = createMemo(() =>
+    parseArgs<{ success?: boolean; replacements?: number }>(
+      props.message.output,
+    ),
+  );
+  const summary = createMemo(() =>
+    result().success
+      ? `${result().replacements ?? 1} replacement(s) made`
+      : "edit failed",
+  );
+  return <ToolOutputBox icon="✎" summary={summary()} />;
+}
+
+function WriteOutput(props: { message: FunctionCallOutputMessage }) {
+  const result = createMemo(() =>
+    parseArgs<{ path?: string; bytesWritten?: number }>(props.message.output),
+  );
+  const summary = createMemo(() =>
+    `wrote ${normalizePath(result().path ?? "")} (${result().bytesWritten ?? 0} bytes)`,
+  );
+  return <ToolOutputBox icon="+" summary={summary()} />;
+}
+
+function GrepOutput(props: { message: FunctionCallOutputMessage }) {
+  const result = createMemo(() =>
+    parseArgs<{ total?: number; truncated?: boolean }>(props.message.output),
+  );
+  const summary = createMemo(() => {
+    const total = result().total ?? 0;
+    const trunc = result().truncated ? "+" : "";
+    return `${total}${trunc} match${total !== 1 ? "es" : ""}`;
+  });
+  return <ToolOutputBox icon="⌕" summary={summary()} />;
+}
+
+function GlobOutput(props: { message: FunctionCallOutputMessage }) {
+  const result = createMemo(() =>
+    parseArgs<{ files?: string[]; truncated?: boolean }>(props.message.output),
+  );
+  const summary = createMemo(() => {
+    const count = result().files?.length ?? 0;
+    const trunc = result().truncated ? "+" : "";
+    return `${count}${trunc} file${count !== 1 ? "s" : ""}`;
+  });
+  return <ToolOutputBox icon="*" summary={summary()} />;
+}
+
+function ListOutput(props: { message: FunctionCallOutputMessage }) {
+  const result = createMemo(() =>
+    parseArgs<{ truncated?: boolean }>(props.message.output),
+  );
+  const summary = createMemo(() =>
+    `listed${result().truncated ? " (truncated)" : ""}`,
+  );
+  return <ToolOutputBox icon="≡" summary={summary()} />;
+}
+
+function WebsearchOutput(props: { message: FunctionCallOutputMessage }) {
+  const result = createMemo(() =>
+    parseArgs<{ results?: string }>(props.message.output),
+  );
+  const summary = createMemo(() => {
+    const chars = result().results?.length ?? 0;
+    return chars > 0 ? `${chars} chars returned` : "no results";
+  });
+  return <ToolOutputBox icon="⌖" summary={summary()} />;
+}
+
+function WebfetchOutput(props: { message: FunctionCallOutputMessage }) {
+  const result = createMemo(() =>
+    parseArgs<{ content?: string; contentType?: string }>(props.message.output),
+  );
+  const summary = createMemo(() => {
+    const ct = result().contentType ?? "";
+    const bytes = result().content?.length ?? 0;
+    return `${bytes} chars (${ct})`;
+  });
+  return <ToolOutputBox icon="↗" summary={summary()} />;
+}
+
+function ToolOutputBox(props: {
+  icon: string;
+  summary: string;
+  children?: JSXElement;
+}) {
   return (
     <box
       border={["left"]}
@@ -367,18 +489,56 @@ function FunctionCallOutputItem(props: { message: FunctionCallOutputMessage }) {
       borderColor={theme.background}
     >
       <text paddingLeft={3} fg={theme.textMuted}>
-        ⚙ {content()}
+        {props.icon} {props.summary}
       </text>
-      <For each={loadedPaths()}>
-        {(filepath) => (
-          <box paddingLeft={3}>
-            <text paddingLeft={3} fg={theme.textMuted}>
-              ↳ Loaded {normalizePath(filepath)}
-            </text>
-          </box>
-        )}
-      </For>
+      {props.children}
     </box>
+  );
+}
+
+// Function call output item with nice formatting
+function FunctionCallOutputItem(props: { message: FunctionCallOutputMessage }) {
+  const toolName = createMemo(
+    () => (props.message.metadata?.name as string | undefined) ?? "",
+  );
+
+  return (
+    <Switch
+      fallback={
+        <ToolOutputBox
+          icon="⚙"
+          summary={`[output] ${props.message.output.slice(0, 80)}`}
+        />
+      }
+    >
+      <Match when={toolName() === "read"}>
+        <ReadOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "bash"}>
+        <BashOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "edit"}>
+        <EditOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "write"}>
+        <WriteOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "grep"}>
+        <GrepOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "glob"}>
+        <GlobOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "list"}>
+        <ListOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "websearch"}>
+        <WebsearchOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "webfetch"}>
+        <WebfetchOutput message={props.message} />
+      </Match>
+    </Switch>
   );
 }
 
