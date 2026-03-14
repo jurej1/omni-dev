@@ -34,7 +34,7 @@ export namespace OpenRouterClient {
     callback: (msg: Message) => void;
     onUsageData: (data: OpenResponsesUsage) => void;
   }) {
-    const model = "z-ai/glm-4.5-air:free";
+    const model = "x-ai/grok-4.1-fast";
     logger.log(`callModel: model=${model} inputLen=${data.length}`);
 
     try {
