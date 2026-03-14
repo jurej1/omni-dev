@@ -14,6 +14,8 @@ type MessagesContextValue = {
   messages: () => Message[];
   addMessage: (message: Message) => void;
   clearMessages: () => void;
+  getMessagesByAgent: (agentName: string) => Message[];
+  getSessionAgentTimeline: () => Array<{ agent: string; timestamp: Date; messageCount: number }>;
 };
 
 export const MessagesContext = createContext<MessagesContextValue>();
@@ -52,8 +54,43 @@ export const MessagesProvider: ParentComponent = (props) => {
     setMessages([]);
   };
 
+  const getMessagesByAgent = (agentName: string): Message[] => {
+    return messages().filter((msg) => msg.metadata?.agent === agentName);
+  };
+
+  const getSessionAgentTimeline = (): Array<{ agent: string; timestamp: Date; messageCount: number }> => {
+    const timeline: Record<string, { agent: string; timestamp: Date; count: number }> = {};
+    const msgList = messages();
+
+    msgList.forEach((msg) => {
+      const agent = msg.metadata?.agent || "unknown";
+      if (!timeline[agent]) {
+        timeline[agent] = {
+          agent,
+          timestamp: new Date(),
+          count: 0,
+        };
+      }
+      timeline[agent].count++;
+    });
+
+    return Object.values(timeline).map((entry) => ({
+      agent: entry.agent,
+      timestamp: entry.timestamp,
+      messageCount: entry.count,
+    }));
+  };
+
   return (
-    <MessagesContext.Provider value={{ messages, addMessage, clearMessages }}>
+    <MessagesContext.Provider
+      value={{
+        messages,
+        addMessage,
+        clearMessages,
+        getMessagesByAgent,
+        getSessionAgentTimeline,
+      }}
+    >
       {props.children}
     </MessagesContext.Provider>
   );

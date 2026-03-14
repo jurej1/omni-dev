@@ -1,4 +1,4 @@
-import { OpenRouter } from "@openrouter/sdk";
+import { OpenRouter, tool } from "@openrouter/sdk";
 import { tools } from "../tools";
 import { MessageStatus } from "../messages";
 import { Message } from "../context/messages";
@@ -7,6 +7,8 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
 import { SystemPrompt } from "../utils/system";
+
+type Tool = ReturnType<typeof tool>;
 
 const openrouter = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY!,
@@ -30,18 +32,25 @@ export namespace OpenRouterClient {
     data,
     callback,
     onUsageData,
+    tools: overrideTools,
+    agentInstructions,
   }: {
     data: Message[];
     callback: (msg: Message) => void;
     onUsageData: (data: OpenResponsesUsage) => void;
+    tools?: Tool[];
+    agentInstructions?: string;
   }) {
     const model = "arcee-ai/trinity-large-preview:free";
     logger.log(`callModel: model=${model} inputLen=${data.length}`);
 
+    const toolsList = overrideTools || tools;
+    const instructions = agentInstructions || SystemPrompt.instructions();
+
     try {
       const result = openrouter.callModel({
         model,
-        instructions: SystemPrompt.instructions(),
+        instructions,
         parallelToolCalls: true,
         input: [
           {
@@ -64,7 +73,7 @@ export namespace OpenRouterClient {
               }
             }),
         ],
-        tools: tools,
+        tools: toolsList,
       });
 
       for await (const item of result.getItemsStream()) {

@@ -2,17 +2,20 @@ import { Input } from "./components/input";
 import { Messages } from "./components/messages";
 import { Sidepanel } from "./components/sidepanel";
 import { MessagesProvider } from "./context/messages";
+import { SessionProvider } from "./context/session";
 import { OpenRouterProvider } from "./context/openrouter";
 import { AutocompleteProvider } from "./context/autocomplete";
 
 export function App() {
   return (
     <MessagesProvider>
-      <OpenRouterProvider>
-        <AutocompleteProvider>
-          <AppShell />
-        </AutocompleteProvider>
-      </OpenRouterProvider>
+      <SessionProvider>
+        <OpenRouterProvider>
+          <AutocompleteProvider>
+            <AppShell />
+          </AutocompleteProvider>
+        </OpenRouterProvider>
+      </SessionProvider>
     </MessagesProvider>
   );
 }

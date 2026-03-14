@@ -5,6 +5,7 @@ import {
   useContext,
 } from "solid-js";
 import { useMessages } from "./messages";
+import { useSession } from "./session";
 import { OpenRouterClient } from "../openrouter/openrouter";
 import type { Message } from "./messages";
 import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
@@ -19,6 +20,7 @@ export const OpenRouterContext = createContext<OpenRouterContextValue>();
 
 export const OpenRouterProvider: ParentComponent = (props) => {
   const { addMessage, messages } = useMessages();
+  const { toolsForCurrentAgent, instructionsForCurrentAgent, currentAgentName } = useSession();
   const [isStreaming, setIsStreaming] = createSignal(false);
   const [usage, setUsage] = createSignal<OpenResponsesUsage | undefined>(
     undefined,
@@ -32,6 +34,9 @@ export const OpenRouterProvider: ParentComponent = (props) => {
       id: `user-${Date.now()}`,
       role: "user",
       content: newMessage,
+      metadata: {
+        agent: currentAgentName(),
+      },
     };
 
     addMessage(userMessage);
@@ -41,6 +46,8 @@ export const OpenRouterProvider: ParentComponent = (props) => {
         data: messages(),
         callback: addMessage,
         onUsageData: setUsage,
+        tools: toolsForCurrentAgent(),
+        agentInstructions: instructionsForCurrentAgent(),
       });
     } catch (error: unknown) {
       const errorMessage: Message = {
@@ -48,6 +55,9 @@ export const OpenRouterProvider: ParentComponent = (props) => {
         id: `error-${Date.now()}`,
         role: "assistant",
         content: [{ type: "output_text", text: `Error calling model: ${error instanceof Error ? error.message : String(error)}` }],
+        metadata: {
+          agent: currentAgentName(),
+        },
       };
       addMessage(errorMessage);
     } finally {
