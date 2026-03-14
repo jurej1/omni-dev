@@ -58,6 +58,8 @@ export namespace OpenRouterClient {
         tools: tools,
       });
 
+      const callIdToName = new Map<string, string>();
+
       for await (const item of result.getItemsStream()) {
         logger.debug(`stream item: type=${item.type}`);
         if (item.status === "completed") {
@@ -83,6 +85,7 @@ export namespace OpenRouterClient {
               arguments: item.arguments,
               status: item.status,
             });
+            callIdToName.set(item.callId, item.name);
             break;
           case "reasoning":
             callback({
@@ -93,15 +96,30 @@ export namespace OpenRouterClient {
               content: item.content,
             });
             break;
-          case "function_call_output":
+          case "function_call_output": {
+            let metadata: Record<string, unknown> | undefined;
+            try {
+              const parsed = JSON.parse(item.output);
+              if (parsed && typeof parsed === "object" && parsed.metadata) {
+                metadata = parsed.metadata as Record<string, unknown>;
+              }
+            } catch {
+              // non-JSON output — metadata stays undefined
+            }
+            const toolName = callIdToName.get(item.callId);
+            if (toolName) {
+              metadata = { ...(metadata ?? {}), name: toolName };
+            }
             callback({
               type: item.type,
               id: item.id,
               callId: item.callId,
               output: item.output,
               status: item.status as MessageStatus | undefined,
+              ...(metadata !== undefined && { metadata }),
             });
             break;
+          }
         }
       }
 
