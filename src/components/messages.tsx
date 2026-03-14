@@ -1,4 +1,5 @@
-import { For, createMemo, Show } from "solid-js";
+import { For, createMemo, Show, Switch, Match } from "solid-js";
+import type { JSXElement } from "solid-js";
 import { useMessages } from "../context/messages";
 import {
   SyntaxStyle,
@@ -6,8 +7,6 @@ import {
   createTextAttributes,
   ScrollBoxRenderable,
 } from "@opentui/core";
-
-const bold = createTextAttributes({ bold: true });
 
 import type {
   FunctionCallMessage,
@@ -18,7 +17,6 @@ import type {
 } from "../messages";
 import { Dynamic } from "@opentui/solid";
 
-// Simplified syntax style for nice formatting
 const syntaxStyle = SyntaxStyle.fromStyles({
   "markup.heading.1": { fg: RGBA.fromHex("#58A6FF"), bold: true },
   "markup.heading.2": { fg: RGBA.fromHex("#58A6FF"), bold: true },
@@ -27,6 +25,8 @@ const syntaxStyle = SyntaxStyle.fromStyles({
   "markup.raw": { fg: RGBA.fromHex("#A5D6FF") },
   default: { fg: RGBA.fromHex("#E6EDF3") },
 });
+
+const bold = createTextAttributes({ bold: true });
 
 // Theme colors for nice formatting
 const theme = {
@@ -38,8 +38,6 @@ const theme = {
   error: "#FF7B72",
   warning: "#D29922",
 };
-
-// Text message component with nice formatting
 function TextMessage(props: { message: MessageMessage }) {
   const text = createMemo(() =>
     props.message.content
@@ -98,16 +96,24 @@ function UserMessage(props: { message: UserMessage }) {
   );
 }
 
-// Function call item with nice formatting
-function FunctionCallItem(props: { message: FunctionCallMessage }) {
-  const status = createMemo(() =>
-    props.message.status ? ` (${props.message.status})` : "",
-  );
+function parseArgs<T = Record<string, unknown>>(raw: string): T {
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return {} as T;
+  }
+}
 
-  const content = createMemo(
-    () => `[tool] ${props.message.name}(${props.message.arguments})${status()}`,
+function ToolCallBox(props: {
+  icon: string;
+  label: string;
+  detail?: string;
+  status?: string;
+  children?: JSXElement;
+}) {
+  const statusText = createMemo(() =>
+    props.status ? ` (${props.status})` : "",
   );
-
   return (
     <box
       border={["left"]}
@@ -120,16 +126,235 @@ function FunctionCallItem(props: { message: FunctionCallMessage }) {
       borderColor={theme.background}
     >
       <text paddingLeft={3} fg={theme.textMuted}>
-        ⚙ {content()}
+        {props.icon} {props.label}
+        {props.detail ? ` ${props.detail}` : ""}
+        {statusText()}
       </text>
+      {props.children}
     </box>
   );
+}
+
+function ReadCall(props: { message: FunctionCallMessage }) {
+  const args = createMemo(() =>
+    parseArgs<{ filePath?: string; offset?: number; limit?: number }>(
+      props.message.arguments,
+    ),
+  );
+  const detail = createMemo(() => {
+    const extra: string[] = [];
+    if (args().offset !== undefined) extra.push(`offset=${args().offset}`);
+    if (args().limit !== undefined) extra.push(`limit=${args().limit}`);
+    return extra.length ? `(${extra.join(", ")})` : "";
+  });
+  return (
+    <ToolCallBox
+      icon="→"
+      label={args().filePath ?? ""}
+      detail={detail()}
+      status={props.message.status}
+    />
+  );
+}
+
+function BashCall(props: { message: FunctionCallMessage }) {
+  const args = createMemo(() =>
+    parseArgs<{ command?: string }>(props.message.arguments),
+  );
+  return (
+    <ToolCallBox
+      icon="$"
+      label={args().command ?? ""}
+      status={props.message.status}
+    />
+  );
+}
+
+function EditCall(props: { message: FunctionCallMessage }) {
+  const args = createMemo(() =>
+    parseArgs<{ filePath?: string; replaceAll?: boolean }>(
+      props.message.arguments,
+    ),
+  );
+  const detail = createMemo(() =>
+    args().replaceAll ? "(replaceAll)" : "",
+  );
+  return (
+    <ToolCallBox
+      icon="✎"
+      label={args().filePath ?? ""}
+      detail={detail()}
+      status={props.message.status}
+    />
+  );
+}
+
+function WriteCall(props: { message: FunctionCallMessage }) {
+  const args = createMemo(() =>
+    parseArgs<{ filePath?: string }>(props.message.arguments),
+  );
+  return (
+    <ToolCallBox
+      icon="+"
+      label={args().filePath ?? ""}
+      status={props.message.status}
+    />
+  );
+}
+
+function GrepCall(props: { message: FunctionCallMessage }) {
+  const args = createMemo(() =>
+    parseArgs<{ pattern?: string; path?: string; include?: string }>(
+      props.message.arguments,
+    ),
+  );
+  const detail = createMemo(() => {
+    const parts: string[] = [];
+    if (args().path) parts.push(`in ${args().path}`);
+    if (args().include) parts.push(`[${args().include}]`);
+    return parts.join(" ");
+  });
+  return (
+    <ToolCallBox
+      icon="⌕"
+      label={args().pattern ?? ""}
+      detail={detail()}
+      status={props.message.status}
+    />
+  );
+}
+
+function GlobCall(props: { message: FunctionCallMessage }) {
+  const args = createMemo(() =>
+    parseArgs<{ pattern?: string; path?: string }>(props.message.arguments),
+  );
+  const detail = createMemo(() =>
+    args().path ? `in ${args().path}` : "",
+  );
+  return (
+    <ToolCallBox
+      icon="*"
+      label={args().pattern ?? ""}
+      detail={detail()}
+      status={props.message.status}
+    />
+  );
+}
+
+function ListCall(props: { message: FunctionCallMessage }) {
+  const args = createMemo(() =>
+    parseArgs<{ path?: string }>(props.message.arguments),
+  );
+  const cwd = process.cwd();
+  return (
+    <ToolCallBox
+      icon="≡"
+      label={args().path ?? cwd}
+      status={props.message.status}
+    />
+  );
+}
+
+function WebsearchCall(props: { message: FunctionCallMessage }) {
+  const args = createMemo(() =>
+    parseArgs<{ query?: string; type?: string; numResults?: number }>(
+      props.message.arguments,
+    ),
+  );
+  const detail = createMemo(() => {
+    const parts: string[] = [];
+    if (args().type && args().type !== "auto") parts.push(args().type!);
+    if (args().numResults) parts.push(`n=${args().numResults}`);
+    return parts.join(" ");
+  });
+  return (
+    <ToolCallBox
+      icon="⌖"
+      label={args().query ?? ""}
+      detail={detail()}
+      status={props.message.status}
+    />
+  );
+}
+
+function WebfetchCall(props: { message: FunctionCallMessage }) {
+  const args = createMemo(() =>
+    parseArgs<{ url?: string; format?: string }>(props.message.arguments),
+  );
+  const detail = createMemo(() =>
+    args().format && args().format !== "markdown" ? `(${args().format})` : "",
+  );
+  return (
+    <ToolCallBox
+      icon="↗"
+      label={args().url ?? ""}
+      detail={detail()}
+      status={props.message.status}
+    />
+  );
+}
+
+// Function call item with nice formatting
+function FunctionCallItem(props: { message: FunctionCallMessage }) {
+  return (
+    <Switch
+      fallback={
+        <ToolCallBox
+          icon="⚙"
+          label={`${props.message.name}(${props.message.arguments})`}
+          status={props.message.status}
+        />
+      }
+    >
+      <Match when={props.message.name === "read"}>
+        <ReadCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "bash"}>
+        <BashCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "edit"}>
+        <EditCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "write"}>
+        <WriteCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "grep"}>
+        <GrepCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "glob"}>
+        <GlobCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "list"}>
+        <ListCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "websearch"}>
+        <WebsearchCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "webfetch"}>
+        <WebfetchCall message={props.message} />
+      </Match>
+    </Switch>
+  );
+}
+
+function normalizePath(filepath: string): string {
+  const cwd = process.cwd();
+  if (filepath.startsWith(cwd)) {
+    return filepath.slice(cwd.length).replace(/^\//, "");
+  }
+  return filepath;
 }
 
 // Function call output item with nice formatting
 function FunctionCallOutputItem(props: { message: FunctionCallOutputMessage }) {
   const content = createMemo(() => `[output] ${props.message.output}`);
 
+  const loadedPaths = createMemo(() => {
+    const loaded = props.message.metadata?.loaded;
+    if (!loaded || !Array.isArray(loaded)) return [];
+    return loaded.filter((p): p is string => typeof p === "string");
+  });
+
   return (
     <box
       border={["left"]}
@@ -144,6 +369,15 @@ function FunctionCallOutputItem(props: { message: FunctionCallOutputMessage }) {
       <text paddingLeft={3} fg={theme.textMuted}>
         ⚙ {content()}
       </text>
+      <For each={loadedPaths()}>
+        {(filepath) => (
+          <box paddingLeft={3}>
+            <text paddingLeft={3} fg={theme.textMuted}>
+              ↳ Loaded {normalizePath(filepath)}
+            </text>
+          </box>
+        )}
+      </For>
     </box>
   );
 }
