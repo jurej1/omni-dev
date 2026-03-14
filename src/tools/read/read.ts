@@ -3,6 +3,7 @@ import * as path from "path";
 import * as fs from "fs";
 import z from "zod";
 import { createInterface } from "readline";
+import * as DESCRIPTION from "./read.txt";
 
 const DEFAULT_READ_LIMIT = 2000;
 const MAX_LINE_LENGTH = 2000;
@@ -31,10 +32,28 @@ export const ReadMetadataSchema = z.object({
 });
 export type ReadMetadata = z.infer<typeof ReadMetadataSchema>;
 
+export const ReadOutputSchema = z.object({
+  title: z.string(),
+  output: z.string(),
+  metadata: ReadMetadataSchema,
+  attachments: z
+    .array(
+      z.object({
+        type: z.literal("file"),
+        mime: z.string(),
+        url: z.string(),
+      }),
+    )
+    .optional(),
+});
+export type ReadOutput = z.infer<typeof ReadOutputSchema>;
+
 export const readTool = tool({
   name: "read",
-  description: "Read the contents of a file",
+  description: DESCRIPTION,
   inputSchema: ReadInputSchema,
+  outputSchema: ReadOutputSchema,
+
   execute: async (params) => {
     if (params.offset !== undefined && params.offset < 1) {
       throw new Error("offset must be greater than or equal to 1");

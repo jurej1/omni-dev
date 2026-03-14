@@ -117,7 +117,6 @@ function UserMessage(props: { message: UserMessage }) {
   );
 }
 
-
 function ToolCallBox(props: {
   icon: string;
   label: string;
@@ -348,12 +347,13 @@ function normalizePath(filepath: string): string {
 }
 
 function ReadOutput(props: { message: FunctionCallOutputMessage }) {
-  const metadata = createMemo(() =>
-    ReadMetadataSchema.safeParse(props.message.metadata).data ?? {
-      preview: "",
-      truncated: false,
-      loaded: [],
-    },
+  const metadata = createMemo(
+    () =>
+      ReadMetadataSchema.safeParse(props.message.metadata).data ?? {
+        preview: "",
+        truncated: false,
+        loaded: [],
+      },
   );
   const loaded = createMemo(() => metadata().loaded);
   const truncated = createMemo(() => metadata().truncated);
