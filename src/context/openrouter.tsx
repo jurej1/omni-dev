@@ -48,6 +48,7 @@ export const OpenRouterProvider: ParentComponent = (props) => {
         onUsageData: setUsage,
         tools: toolsForCurrentAgent(),
         agentInstructions: instructionsForCurrentAgent(),
+        agent: currentAgentName(),
       });
     } catch (error: unknown) {
       const errorMessage: Message = {

@@ -4,6 +4,7 @@ import {
   Show,
 } from "solid-js";
 import { useOpenRouter } from "../context/openrouter";
+import { useSession } from "../context/session";
 import { useAutocomplete } from "../context/autocomplete";
 import {
   TextareaRenderable,
@@ -61,6 +62,7 @@ export function Input() {
   let input: TextareaRenderable;
 
   const { callModel, isStreaming } = useOpenRouter();
+  const { currentAgentName } = useSession();
   const {
     autocompleteVisible,
     setAutocompleteVisible,
@@ -189,6 +191,16 @@ export function Input() {
     setMentionedFiles([]);
   };
 
+  const getAgentColor = () => {
+    const agent = currentAgentName();
+    return agent === "plan" ? "#a78bfa" : "#34d399";
+  };
+
+  const getAgentIcon = () => {
+    const agent = currentAgentName();
+    return agent === "plan" ? "📋" : "🔨";
+  };
+
   return (
     <box
       borderStyle="single"
@@ -201,26 +213,35 @@ export function Input() {
         when={isStreaming()}
         fallback={
           <>
-            <textarea
-              focused={true}
-              placeholder={PLACEHOLDERS[0]}
-              minHeight={1}
-              maxHeight={6}
-              onSubmit={submit}
-              onMouseDown={(e) => e.target.focus()}
-              onContentChange={handleContentChange}
-              onKeyDown={handleKeyDown}
-              ref={input}
-            ></textarea>
-            <Show when={autocompleteVisible()}>
-              <FileAutocomplete
-                visible={autocompleteVisible()}
-                options={filteredOptions()}
-                selectedIndex={selectedIndex()}
-                onSelect={handleSelect}
-                onDismiss={() => setAutocompleteVisible(false)}
-              />
-            </Show>
+            <box flexDirection="row" gap={1} padding={0} alignItems="flex-start">
+              <box width="auto" padding={0} paddingLeft={1} paddingTop={0}>
+                <text fg={getAgentColor()} attributes={boldAttributes}>
+                  {getAgentIcon()} {currentAgentName().toUpperCase()}
+                </text>
+              </box>
+              <box flexGrow={1}>
+                <textarea
+                  focused={true}
+                  placeholder={PLACEHOLDERS[0]}
+                  minHeight={1}
+                  maxHeight={6}
+                  onSubmit={submit}
+                  onMouseDown={(e) => e.target.focus()}
+                  onContentChange={handleContentChange}
+                  onKeyDown={handleKeyDown}
+                  ref={input}
+                ></textarea>
+                <Show when={autocompleteVisible()}>
+                  <FileAutocomplete
+                    visible={autocompleteVisible()}
+                    options={filteredOptions()}
+                    selectedIndex={selectedIndex()}
+                    onSelect={handleSelect}
+                    onDismiss={() => setAutocompleteVisible(false)}
+                  />
+                </Show>
+              </box>
+            </box>
           </>
         }
       >
