@@ -21,6 +21,9 @@ export namespace AgentTool {
     description: string;
     instructions: string;
     toolsList: Tool[];
+    color: string;
+    label: string;
+    sigil: string;
   };
 
   export function define(
@@ -28,8 +31,11 @@ export namespace AgentTool {
     description: string,
     instructions: string,
     toolsList: Tool[],
+    color: string,
+    label: string,
+    sigil: string,
   ): Definition {
-    return { name, description, instructions, toolsList };
+    return { name, description, instructions, toolsList, color, label, sigil };
   }
 }
 
@@ -39,6 +45,9 @@ export namespace Agent {
     "Analyzes the request and produces a step-by-step implementation plan before any code is written.",
     PLAN_INSTRUCTIONS,
     [readTool, globTool, grepTool, listTool, websearchTool, webfetchTool],
+    "#a78bfa",
+    "PLAN",
+    "◈",
   );
 
   export const BUILD = AgentTool.define(
@@ -56,5 +65,8 @@ export namespace Agent {
       editTool,
       writeTool,
     ],
+    "#34d399",
+    "BUILD",
+    "◆",
   );
 }

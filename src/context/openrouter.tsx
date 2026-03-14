@@ -20,7 +20,11 @@ export const OpenRouterContext = createContext<OpenRouterContextValue>();
 
 export const OpenRouterProvider: ParentComponent = (props) => {
   const { addMessage, messages } = useMessages();
-  const { toolsForCurrentAgent, instructionsForCurrentAgent, currentAgentName } = useSession();
+  const {
+    toolsForCurrentAgent,
+    instructionsForCurrentAgent,
+    currentAgentName,
+  } = useSession();
   const [isStreaming, setIsStreaming] = createSignal(false);
   const [usage, setUsage] = createSignal<OpenResponsesUsage | undefined>(
     undefined,
@@ -34,9 +38,6 @@ export const OpenRouterProvider: ParentComponent = (props) => {
       id: `user-${Date.now()}`,
       role: "user",
       content: newMessage,
-      metadata: {
-        agent: currentAgentName(),
-      },
     };
 
     addMessage(userMessage);
@@ -48,17 +49,18 @@ export const OpenRouterProvider: ParentComponent = (props) => {
         onUsageData: setUsage,
         tools: toolsForCurrentAgent(),
         agentInstructions: instructionsForCurrentAgent(),
-        agent: currentAgentName(),
       });
     } catch (error: unknown) {
       const errorMessage: Message = {
         type: "message",
         id: `error-${Date.now()}`,
         role: "assistant",
-        content: [{ type: "output_text", text: `Error calling model: ${error instanceof Error ? error.message : String(error)}` }],
-        metadata: {
-          agent: currentAgentName(),
-        },
+        content: [
+          {
+            type: "output_text",
+            text: `Error calling model: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
       };
       addMessage(errorMessage);
     } finally {

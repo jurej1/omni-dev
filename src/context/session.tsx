@@ -10,122 +10,58 @@ import { Agent, AgentTool } from "../utils/agent";
 
 type Tool = ReturnType<typeof tool>;
 
-type AgentHistoryEntry = {
-  agentName: string;
-  timestamp: Date;
-  messageStartIndex: number;
+const AVAILABLE_AGENTS: Record<string, AgentTool.Definition> = {
+  plan: Agent.PLAN,
+  build: Agent.BUILD,
 };
 
 type SessionContextValue = {
-  // Current state
-  currentAgent: () => AgentTool.Definition | null;
-  previousAgent: () => AgentTool.Definition | null;
+  agent: () => AgentTool.Definition;
 
   // Derived state
   currentAgentName: () => string;
   toolsForCurrentAgent: () => Tool[];
   instructionsForCurrentAgent: () => string;
 
-  // History
-  agentHistory: () => AgentHistoryEntry[];
-
   // Actions
   switchToAgent: (agentName: string) => void;
-  getAgentByName: (name: string) => AgentTool.Definition | null;
-
-  // Session metadata
-  sessionStartAgent: () => string | null;
-  agentSwitchCount: () => number;
 };
 
 export const SessionContext = createContext<SessionContextValue>();
 
-const AVAILABLE_AGENTS: Record<string, AgentTool.Definition> = {
-  plan: Agent.PLAN,
-  build: Agent.BUILD,
-};
-
 export const SessionProvider: ParentComponent = (props) => {
-  // Default to BUILD agent
-  const [currentAgent, setCurrentAgent] = createSignal<AgentTool.Definition | null>(
-    Agent.BUILD,
+  const [agent, setAgent] = createSignal<AgentTool.Definition>(Agent.BUILD);
+
+  const currentAgentName = createMemo(() => agent().name);
+
+  const toolsForCurrentAgent = createMemo(() => agent().toolsList ?? []);
+
+  const instructionsForCurrentAgent = createMemo(
+    () => agent().instructions ?? "",
   );
-  const [previousAgent, setPreviousAgent] = createSignal<AgentTool.Definition | null>(
-    null,
-  );
-  const [agentHistory, setAgentHistory] = createSignal<AgentHistoryEntry[]>([
-    {
-      agentName: Agent.BUILD.name,
-      timestamp: new Date(),
-      messageStartIndex: 0,
-    },
-  ]);
-  const [sessionStartAgent] = createSignal(Agent.BUILD.name);
-
-  const currentAgentName = createMemo(() => currentAgent()?.name ?? "unknown");
-
-  const toolsForCurrentAgent = createMemo(() => {
-    const agent = currentAgent();
-    return agent?.toolsList ?? [];
-  });
-
-  const instructionsForCurrentAgent = createMemo(() => {
-    const agent = currentAgent();
-    return agent?.instructions ?? "";
-  });
-
-  const agentSwitchCount = createMemo(() => agentHistory().length - 1);
 
   const switchToAgent = (agentName: string) => {
-    const agent = AVAILABLE_AGENTS[agentName.toLowerCase()];
+    const next = AVAILABLE_AGENTS[agentName.toLowerCase()];
 
-    if (!agent) {
+    if (!next) {
       throw new Error(
         `Unknown agent: ${agentName}. Available agents: ${Object.keys(AVAILABLE_AGENTS).join(", ")}`,
       );
     }
 
-    const current = currentAgent();
-    if (current && current.name === agent.name) {
-      return; // Already on this agent
-    }
+    if (agent().name === next.name) return;
 
-    // Update previous agent
-    if (current) {
-      setPreviousAgent(current);
-    }
-
-    // Update current agent
-    setCurrentAgent(agent);
-
-    // Add to history
-    setAgentHistory((prev) => [
-      ...prev,
-      {
-        agentName: agent.name,
-        timestamp: new Date(),
-        messageStartIndex: 0, // This will be set by the consuming code if needed
-      },
-    ]);
-  };
-
-  const getAgentByName = (name: string): AgentTool.Definition | null => {
-    return AVAILABLE_AGENTS[name.toLowerCase()] ?? null;
+    setAgent(next);
   };
 
   return (
     <SessionContext.Provider
       value={{
-        currentAgent,
-        previousAgent,
+        agent,
         currentAgentName,
         toolsForCurrentAgent,
         instructionsForCurrentAgent,
-        agentHistory,
         switchToAgent,
-        getAgentByName,
-        sessionStartAgent,
-        agentSwitchCount,
       }}
     >
       {props.children}

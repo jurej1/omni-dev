@@ -1,12 +1,8 @@
-import {
-  createSignal,
-  onCleanup,
-  Show,
-} from "solid-js";
+import { createSignal, onCleanup, Show } from "solid-js";
 import { useOpenRouter } from "../context/openrouter";
 import { useSession } from "../context/session";
+import { AgentTool } from "../utils/agent";
 import { useAutocomplete } from "../context/autocomplete";
-import { useKeyboard } from "@opentui/solid";
 import {
   TextareaRenderable,
   createTextAttributes,
@@ -21,13 +17,13 @@ const PLACEHOLDERS = [
 ];
 
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
-
 const THINKING_DOTS = ["   ", ".  ", ".. ", "..."];
 
 const boldAttributes = createTextAttributes({ bold: true });
 const dimAttributes = createTextAttributes({ dim: true });
 
-function ThinkingIndicator() {
+
+function ThinkingIndicator({ agent }: { agent: AgentTool.Definition | null }) {
   const [frame, setFrame] = createSignal(0);
   const [dots, setDots] = createSignal(0);
 
@@ -45,16 +41,33 @@ function ThinkingIndicator() {
   });
 
   return (
-    <box flexDirection="row" gap={1} padding={0} alignItems="center">
-      <text fg="#38bdf8" attributes={boldAttributes}>
-        {SPINNER_FRAMES[frame()]}
-      </text>
-      <text fg="#38bdf8" attributes={boldAttributes}>
-        Thinking
-      </text>
-      <text fg="#38bdf8" attributes={dimAttributes}>
-        {THINKING_DOTS[dots()]}
-      </text>
+    <box flexDirection="column" padding={0}>
+      {/* Status row */}
+      <box
+        flexDirection="row"
+        gap={1}
+        paddingLeft={1}
+        paddingRight={1}
+        paddingTop={0}
+        paddingBottom={0}
+        alignItems="center"
+      >
+        <text fg={agent?.color} attributes={boldAttributes}>
+          {agent?.sigil} {agent?.label}
+        </text>
+        <text fg="#475569" attributes={dimAttributes}>
+          │
+        </text>
+        <text fg="#38bdf8" attributes={boldAttributes}>
+          {SPINNER_FRAMES[frame()]}
+        </text>
+        <text fg="#38bdf8" attributes={boldAttributes}>
+          thinking
+        </text>
+        <text fg="#64748b" attributes={dimAttributes}>
+          {THINKING_DOTS[dots()]}
+        </text>
+      </box>
     </box>
   );
 }
@@ -63,17 +76,16 @@ export function Input() {
   let input: TextareaRenderable;
 
   const { callModel, isStreaming } = useOpenRouter();
-  const { currentAgentName, switchToAgent } = useSession();
+  const { agent, currentAgentName, switchToAgent } = useSession();
+
   const {
     autocompleteVisible,
     setAutocompleteVisible,
     autocompleteIndex,
     setAutocompleteIndex,
-    autocompleteQuery,
     setAutocompleteQuery,
     selectedIndex,
     setSelectedIndex,
-    mentionedFiles,
     setMentionedFiles,
     filteredOptions,
   } = useAutocomplete();
@@ -116,28 +128,20 @@ export function Input() {
   const handleKeyDown = (e: KeyEvent) => {
     const name = e.name?.toLowerCase();
 
-    // Handle Tab to switch between agents
     if (name === "tab") {
-      // Only switch agents if autocomplete is not visible
       if (!autocompleteVisible()) {
         e.preventDefault();
-        const agents = ["plan", "build"];
         const current = currentAgentName().toLowerCase();
-        const nextAgent = current === "plan" ? "build" : "plan";
-        switchToAgent(nextAgent);
+        switchToAgent(current === "plan" ? "build" : "plan");
         return;
       }
-      // If autocomplete is visible, handle Tab normally for selection
       e.preventDefault();
       const options = filteredOptions && filteredOptions();
       const selected = options[selectedIndex()];
-      if (selected) {
-        handleSelect(selected);
-      }
+      if (selected) handleSelect(selected);
       return;
     }
 
-    // Check for "@" key to trigger autocomplete
     if (!autocompleteVisible() && name === "@") {
       const cursor = input.cursorOffset;
       const charBefore =
@@ -178,9 +182,7 @@ export function Input() {
     if (name === "return") {
       e.preventDefault();
       const selected = options[selectedIndex()];
-      if (selected) {
-        handleSelect(selected);
-      }
+      if (selected) handleSelect(selected);
       return;
     }
   };
@@ -207,40 +209,25 @@ export function Input() {
   const submit = async () => {
     if (isStreaming()) return;
     const rawText = input.plainText;
-
     callModel(rawText);
     input.clear();
     setMentionedFiles([]);
   };
 
-  const getAgentColor = () => {
-    const agent = currentAgentName();
-    return agent === "plan" ? "#a78bfa" : "#34d399";
-  };
-
-  const getAgentIcon = () => {
-    const agent = currentAgentName();
-    return agent === "plan" ? "📋" : "🔨";
-  };
-
   return (
     <box
       borderStyle="single"
-      borderColor={isStreaming() ? "#38bdf8" : "#30363d"}
+      borderColor={isStreaming() ? "#38bdf8" : "#1e293b"}
       margin={0}
       padding={0}
-      position="relative"
+      flexDirection="column"
+      gap={1}
     >
       <Show
         when={isStreaming()}
         fallback={
           <>
-            <box flexDirection="row" gap={1} padding={0} alignItems="flex-start">
-              <box width="auto" padding={0} paddingLeft={1} paddingTop={0}>
-                <text fg={getAgentColor()} attributes={boldAttributes}>
-                  {getAgentIcon()} {currentAgentName().toUpperCase()}
-                </text>
-              </box>
+            <box flexDirection="row" paddingLeft={1} paddingRight={1}>
               <box flexGrow={1}>
                 <textarea
                   focused={true}
@@ -252,7 +239,7 @@ export function Input() {
                   onContentChange={handleContentChange}
                   onKeyDown={handleKeyDown}
                   ref={input}
-                ></textarea>
+                />
                 <Show when={autocompleteVisible()}>
                   <FileAutocomplete
                     visible={autocompleteVisible()}
@@ -264,10 +251,34 @@ export function Input() {
                 </Show>
               </box>
             </box>
+
+            <box
+              flexDirection="row"
+              gap={1}
+              paddingLeft={1}
+              paddingRight={1}
+              paddingTop={0}
+              paddingBottom={0}
+              alignItems="center"
+            >
+              <text
+                fg={agent().color}
+                attributes={boldAttributes}
+              >
+                {agent().sigil}{" "}
+                {agent().label}
+              </text>
+              <text fg="#334155" attributes={dimAttributes}>
+                │
+              </text>
+              <text fg="#334155" attributes={dimAttributes}>
+                tab to switch · @ for files · enter to send
+              </text>
+            </box>
           </>
         }
       >
-        <ThinkingIndicator />
+        <ThinkingIndicator agent={agent()} />
       </Show>
     </box>
   );

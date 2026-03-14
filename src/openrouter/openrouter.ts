@@ -34,27 +34,28 @@ export namespace OpenRouterClient {
     onUsageData,
     tools: overrideTools,
     agentInstructions,
-    agent,
   }: {
     data: Message[];
     callback: (msg: Message) => void;
     onUsageData: (data: OpenResponsesUsage) => void;
     tools?: Tool[];
     agentInstructions?: string;
-    agent?: string;
   }) {
     const model = "arcee-ai/trinity-large-preview:free";
-    logger.log(`callModel: model=${model} agent=${agent || "default"} inputLen=${data.length}`);
+    logger.log(`callModel: model=${model}  inputLen=${data.length}`);
 
     const toolsList = overrideTools || tools;
-    const instructions = agentInstructions || SystemPrompt.instructions();
 
     try {
       const result = openrouter.callModel({
         model,
-        instructions,
+        instructions: agentInstructions,
         parallelToolCalls: true,
         input: [
+          {
+            role: "system",
+            content: SystemPrompt.instructions(),
+          },
           {
             role: "system",
             content: `${process.cwd()} is the current working directory`,
