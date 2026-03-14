@@ -50,9 +50,8 @@ export type ReadOutput = z.infer<typeof ReadOutputSchema>;
 
 export const readTool = tool({
   name: "read",
-  description: DESCRIPTION,
+  description: "",
   inputSchema: ReadInputSchema,
-  outputSchema: ReadOutputSchema,
 
   execute: async (params) => {
     if (params.offset !== undefined && params.offset < 1) {
