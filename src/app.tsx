@@ -21,7 +21,8 @@ function AppShell() {
       height={"100%"}
       width={"100%"}
       backgroundColor={"#171717"}
-      padding={2}
+      paddingLeft={2}
+      gap={2}
       margin={0}
     >
       <box flexDirection="column" height="100%" width={"auto"} gap={1}>
