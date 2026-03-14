@@ -1,38 +1,38 @@
-import { createMemo, For } from "solid-js";
+import { createMemo } from "solid-js";
 import type { FunctionCallOutputMessage } from "../../messages";
-import { ReadMetadataSchema } from "../../tools";
-import { theme, normalizePath } from "./shared";
+
+import {
+  theme,
+  normalizePath,
+  truncateLines,
+  detectLanguage,
+  syntaxStyle,
+} from "./shared";
 import { ToolOutputBox } from "./ToolOutputBox";
 
 export function ReadOutput(props: { message: FunctionCallOutputMessage }) {
-  const metadata = createMemo(
-    () =>
-      ReadMetadataSchema.safeParse(props.message.metadata).data ?? {
-        preview: "",
-        truncated: false,
-        loaded: [],
-      },
-  );
-  const loaded = createMemo(() => metadata().loaded);
-  const truncated = createMemo(() => metadata().truncated);
+  const preview = createMemo(() => {
+    const content = props.message.output.slice(0, 4000);
+    const lines = content.split('\n');
+    const maxPreviewLines = 20;
+    const previewLines = lines.slice(0, maxPreviewLines).map((line, index) => {
+      const num = String(index + 1).padStart(2, ' ') + ': ';
+      const truncatedLine = line.length > 180 ? line.slice(0, 180) + '…' : line;
+      return num + truncatedLine;
+    });
+    return previewLines.join('\n') + (lines.length > maxPreviewLines ? '\n… (truncated)' : '');
+  });
+  const lang = createMemo(() => detectLanguage(props.message.output.slice(0, 1000)));
   return (
     <ToolOutputBox
-      icon="→"
-      summary={
-        loaded().length > 0
-          ? `${normalizePath(loaded()[0])}${truncated() ? " (truncated)" : ""}`
-          : "reading..."
-      }
+      icon="📄"
+      summary="File contents (preview)"
     >
-      <For each={loaded()}>
-        {(filepath) => (
-          <box paddingLeft={3}>
-            <text paddingLeft={3} fg={theme.textMuted}>
-              ↳ Loaded {normalizePath(filepath)}
-            </text>
-          </box>
-        )}
-      </For>
+      <box paddingLeft={3} paddingTop={1} paddingBottom={1} maxHeight={15}>
+        <syntax language={lang()} syntaxStyle={syntaxStyle}>
+          {preview()}
+        </syntax>
+      </box>
     </ToolOutputBox>
   );
 }

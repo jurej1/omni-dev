@@ -40,21 +40,27 @@ export namespace OpenRouterClient {
     try {
       const result = openrouter.callModel({
         model,
-        input: data
-          .filter((msg) => msg.type === "message")
-          .map((msg) => {
-            if (msg.role === "user") {
-              return { role: msg.role, content: msg.content };
-            } else {
-              return {
-                role: msg.role,
-                content: msg.content
-                  .filter((m) => m.type === "output_text")
-                  .map((m) => m.text)
-                  .join(""),
-              };
-            }
-          }),
+        input: [
+          {
+            role: "system",
+            content: `${process.cwd()} is the current working directory`,
+          },
+          ...data
+            .filter((msg) => msg.type === "message")
+            .map((msg) => {
+              if (msg.role === "user") {
+                return { role: msg.role, content: msg.content };
+              } else {
+                return {
+                  role: msg.role,
+                  content: msg.content
+                    .filter((m) => m.type === "output_text")
+                    .map((m) => m.text)
+                    .join(""),
+                };
+              }
+            }),
+        ],
         tools: tools,
       });
 

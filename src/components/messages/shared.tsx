@@ -6,6 +6,11 @@ export const syntaxStyle = SyntaxStyle.fromStyles({
   "markup.heading.3": { fg: RGBA.fromHex("#58A6FF"), bold: true },
   "markup.list": { fg: RGBA.fromHex("#FF7B72") },
   "markup.raw": { fg: RGBA.fromHex("#A5D6FF") },
+  string: { fg: RGBA.fromHex("#7EE787") },
+  property: { fg: RGBA.fromHex("#79C0FF") },
+  number: { fg: RGBA.fromHex("#D2A8FF") },
+  comment: { fg: RGBA.fromHex("#8B949E") },
+  keyword: { fg: RGBA.fromHex("#FF7B72") },
   default: { fg: RGBA.fromHex("#E6EDF3") },
 });
 
@@ -24,7 +29,34 @@ export const theme = {
 export function normalizePath(filepath: string): string {
   const cwd = process.cwd();
   if (filepath.startsWith(cwd)) {
-    return filepath.slice(cwd.length).replace(/^\//, "");
+    return filepath.slice(cwd.length).replace(/^\\/, "");
   }
   return filepath;
+}
+
+export function truncateLines(text: string, maxLines = 10): string {
+  const lines = text.split(/\\r?\\n/);
+  if (lines.length <= maxLines) return text;
+  const truncated = lines.slice(0, maxLines).join("\\n");
+  return (
+    truncated + "\\n... (" + (lines.length - maxLines) + " lines truncated)"
+  );
+}
+
+export function detectLanguage(output: string): string {
+  const trimmed = output.trim();
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) return "json";
+  if (trimmed.startsWith("$") || trimmed.match(/^\\s*[a-zA-Z0-9_-]+/m))
+    return "bash";
+  if (trimmed.match(/^\\w+:/)) return "yaml";
+  return "text";
+}
+
+export function formatJson(jsonStr: string): string {
+  try {
+    const parsed = JSON.parse(jsonStr);
+    return JSON.stringify(parsed, null, 2);
+  } catch {
+    return jsonStr.slice(0, 200) + "...";
+  }
 }

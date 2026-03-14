@@ -3,6 +3,7 @@
     "jsx": "preserve",
     "jsxImportSource": "@opentui/solid",
     "skipLibCheck": true,
-    "esModuleInterop": true
-  }
+    "esModuleInterop": true,
+    "allowJs": true,
+  },
 }

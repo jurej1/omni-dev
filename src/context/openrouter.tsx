@@ -10,7 +10,7 @@ import type { Message } from "./messages";
 import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
 
 type OpenRouterContextValue = {
-  callModel: (message: string) => void;
+  callModel: (message: string) => Promise<void>;
   isStreaming: () => boolean;
   usage: () => OpenResponsesUsage | undefined;
 };
@@ -42,8 +42,14 @@ export const OpenRouterProvider: ParentComponent = (props) => {
         callback: addMessage,
         onUsageData: setUsage,
       });
-    } catch (error) {
-      console.error("Error calling model:", error);
+    } catch (error: unknown) {
+      const errorMessage: Message = {
+        type: "message",
+        id: `error-${Date.now()}`,
+        role: "assistant",
+        content: [{ type: "output_text", text: `Error calling model: ${error instanceof Error ? error.message : String(error)}` }],
+      };
+      addMessage(errorMessage);
     } finally {
       setIsStreaming(false);
     }
