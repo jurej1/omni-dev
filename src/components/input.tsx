@@ -6,6 +6,7 @@ import {
 import { useOpenRouter } from "../context/openrouter";
 import { useSession } from "../context/session";
 import { useAutocomplete } from "../context/autocomplete";
+import { useKeyboard } from "@opentui/solid";
 import {
   TextareaRenderable,
   createTextAttributes,
@@ -62,7 +63,7 @@ export function Input() {
   let input: TextareaRenderable;
 
   const { callModel, isStreaming } = useOpenRouter();
-  const { currentAgentName } = useSession();
+  const { currentAgentName, switchToAgent } = useSession();
   const {
     autocompleteVisible,
     setAutocompleteVisible,
@@ -115,6 +116,27 @@ export function Input() {
   const handleKeyDown = (e: KeyEvent) => {
     const name = e.name?.toLowerCase();
 
+    // Handle Tab to switch between agents
+    if (name === "tab") {
+      // Only switch agents if autocomplete is not visible
+      if (!autocompleteVisible()) {
+        e.preventDefault();
+        const agents = ["plan", "build"];
+        const current = currentAgentName().toLowerCase();
+        const nextAgent = current === "plan" ? "build" : "plan";
+        switchToAgent(nextAgent);
+        return;
+      }
+      // If autocomplete is visible, handle Tab normally for selection
+      e.preventDefault();
+      const options = filteredOptions && filteredOptions();
+      const selected = options[selectedIndex()];
+      if (selected) {
+        handleSelect(selected);
+      }
+      return;
+    }
+
     // Check for "@" key to trigger autocomplete
     if (!autocompleteVisible() && name === "@") {
       const cursor = input.cursorOffset;
@@ -153,7 +175,7 @@ export function Input() {
       return;
     }
 
-    if (name === "return" || name === "tab") {
+    if (name === "return") {
       e.preventDefault();
       const selected = options[selectedIndex()];
       if (selected) {
