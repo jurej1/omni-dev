@@ -5,23 +5,29 @@ import { files, tool } from "@openrouter/sdk";
 
 const LIMIT = 100;
 
+export const GlobInputSchema = z.object({
+  pattern: z.string().describe("The glob pattern to match files against"),
+  path: z
+    .string()
+    .optional()
+    .describe(
+      "The directory to search in. Defaults to current working directory. Must be an absolute path if provided.",
+    ),
+});
+export type GlobInput = z.infer<typeof GlobInputSchema>;
+
+export const GlobOutputSchema = z.object({
+  files: z.array(z.string()),
+  truncated: z.boolean(),
+});
+export type GlobOutput = z.infer<typeof GlobOutputSchema>;
+
 export const globTool = tool({
   name: "glob",
   description:
     "Fast file pattern matching. Returns matching file paths sorted by modification time.",
-  inputSchema: z.object({
-    pattern: z.string().describe("The glob pattern to match files against"),
-    path: z
-      .string()
-      .optional()
-      .describe(
-        "The directory to search in. Defaults to current working directory. Must be an absolute path if provided.",
-      ),
-  }),
-  outputSchema: z.object({
-    files: z.array(z.string()),
-    truncated: z.boolean(),
-  }),
+  inputSchema: GlobInputSchema,
+  outputSchema: GlobOutputSchema,
   execute: async ({ pattern, path: searchPath }) => {
     const dir = resolve(searchPath ?? process.cwd());
     const glob = new Bun.Glob(pattern);

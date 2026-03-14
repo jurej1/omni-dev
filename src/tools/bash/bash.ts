@@ -4,21 +4,27 @@ import z from "zod";
 
 const DEFAULT_TIMEOUT_MS = 30000;
 
+export const BashInputSchema = z.object({
+  command: z.string().describe("Shell command to execute"),
+  timeoutMs: z
+    .number()
+    .optional()
+    .describe("Timeout in milliseconds (default: 30000)"),
+});
+export type BashInput = z.infer<typeof BashInputSchema>;
+
+export const BashOutputSchema = z.object({
+  output: z.string().describe("Command output"),
+  exitCode: z.number().describe("Exit code"),
+  timedOut: z.boolean().describe("Whether the command timed out"),
+});
+export type BashOutput = z.infer<typeof BashOutputSchema>;
+
 export const bashTool = tool({
   name: "bash",
   description: "Execute bash commands on the user's machine",
-  inputSchema: z.object({
-    command: z.string().describe("Shell command to execute"),
-    timeoutMs: z
-      .number()
-      .optional()
-      .describe("Timeout in milliseconds (default: 30000)"),
-  }),
-  outputSchema: z.object({
-    output: z.string().describe("Command output"),
-    exitCode: z.number().describe("Exit code"),
-    timedOut: z.boolean().describe("Whether the command timed out"),
-  }),
+  inputSchema: BashInputSchema,
+  outputSchema: BashOutputSchema,
   execute: async ({ command, timeoutMs = DEFAULT_TIMEOUT_MS }) => {
     const proc = Bun.spawn(["bash", "-c", command], {
       stdout: "pipe",

@@ -2,27 +2,33 @@ import { tool } from "@openrouter/sdk";
 import { resolve } from "path";
 import z from "zod";
 
+export const EditInputSchema = z.object({
+  filePath: z.string().describe("The absolute path to the file to modify"),
+  oldString: z.string().describe("The text to replace"),
+  newString: z
+    .string()
+    .describe(
+      "The text to replace it with (must be different from oldString)",
+    ),
+  replaceAll: z
+    .boolean()
+    .optional()
+    .describe("Replace all occurrences of oldString (default false)"),
+});
+export type EditInput = z.infer<typeof EditInputSchema>;
+
+export const EditOutputSchema = z.object({
+  success: z.boolean().describe("Whether the operation was successful"),
+  replacements: z.number().describe("The number of replacements made"),
+});
+export type EditOutput = z.infer<typeof EditOutputSchema>;
+
 export const editTool = tool({
   name: "edit",
   description:
     "Perform exact string replacement in a file. Replaces oldString with newString. The match must be unique unless replaceAll is true.",
-  inputSchema: z.object({
-    filePath: z.string().describe("The absolute path to the file to modify"),
-    oldString: z.string().describe("The text to replace"),
-    newString: z
-      .string()
-      .describe(
-        "The text to replace it with (must be different from oldString)",
-      ),
-    replaceAll: z
-      .boolean()
-      .optional()
-      .describe("Replace all occurrences of oldString (default false)"),
-  }),
-  outputSchema: z.object({
-    success: z.boolean().describe("Whether the operation was successful"),
-    replacements: z.number().describe("The number of replacements made"),
-  }),
+  inputSchema: EditInputSchema,
+  outputSchema: EditOutputSchema,
   execute: async ({ filePath, oldString, newString, replaceAll = false }) => {
     if (oldString === newString) {
       throw new Error(

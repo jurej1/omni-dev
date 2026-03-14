@@ -5,38 +5,44 @@ import { tool } from "@openrouter/sdk";
 const MAX_LINE_LENGTH = 2000;
 const LIMIT = 100;
 
+export const GrepInputSchema = z.object({
+  pattern: z
+    .string()
+    .describe("The regex pattern to search for in file contents"),
+  path: z
+    .string()
+    .optional()
+    .describe(
+      "The directory to search in. Defaults to the current working directory.",
+    ),
+  include: z
+    .string()
+    .optional()
+    .describe(
+      'File glob pattern to include in the search (e.g. "*.js", "*.{ts,tsx}")',
+    ),
+});
+export type GrepInput = z.infer<typeof GrepInputSchema>;
+
+export const GrepOutputSchema = z.object({
+  matches: z.array(
+    z.object({
+      path: z.string(),
+      lineNum: z.number(),
+      lineText: z.string(),
+    }),
+  ),
+  total: z.number(),
+  truncated: z.boolean(),
+});
+export type GrepOutput = z.infer<typeof GrepOutputSchema>;
+
 export const grepTool = tool({
   name: "grep",
   description:
     "Search file contents using a regex pattern. Returns matching file paths and line numbers.",
-  inputSchema: z.object({
-    pattern: z
-      .string()
-      .describe("The regex pattern to search for in file contents"),
-    path: z
-      .string()
-      .optional()
-      .describe(
-        "The directory to search in. Defaults to the current working directory.",
-      ),
-    include: z
-      .string()
-      .optional()
-      .describe(
-        'File glob pattern to include in the search (e.g. "*.js", "*.{ts,tsx}")',
-      ),
-  }),
-  outputSchema: z.object({
-    matches: z.array(
-      z.object({
-        path: z.string(),
-        lineNum: z.number(),
-        lineText: z.string(),
-      }),
-    ),
-    total: z.number(),
-    truncated: z.boolean(),
-  }),
+  inputSchema: GrepInputSchema,
+  outputSchema: GrepOutputSchema,
   execute: async ({ pattern, path: searchPath, include }) => {
     if (!pattern) throw new Error("pattern is required");
 

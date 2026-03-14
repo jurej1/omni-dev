@@ -4,6 +4,26 @@ import { readdir } from "node:fs/promises";
 import { join, resolve, basename, dirname } from "node:path";
 import { tool } from "@openrouter/sdk";
 
+export const ListInputSchema = z.object({
+  path: z
+    .string()
+    .optional()
+    .describe(
+      "The absolute path to the directory to list. Defaults to current working directory.",
+    ),
+  ignore: z
+    .array(z.string())
+    .optional()
+    .describe("Additional directory names to ignore"),
+});
+export type ListInput = z.infer<typeof ListInputSchema>;
+
+export const ListOutputSchema = z.object({
+  tree: z.string(),
+  truncated: z.boolean(),
+});
+export type ListOutput = z.infer<typeof ListOutputSchema>;
+
 const IGNORE_PATTERNS = new Set([
   "node_modules",
   "__pycache__",
@@ -36,22 +56,8 @@ export const listTool = tool({
   name: "list",
   description:
     "List files in a directory as a tree structure, ignoring common build/cache directories.",
-  inputSchema: z.object({
-    path: z
-      .string()
-      .optional()
-      .describe(
-        "The absolute path to the directory to list. Defaults to current working directory.",
-      ),
-    ignore: z
-      .array(z.string())
-      .optional()
-      .describe("Additional directory names to ignore"),
-  }),
-  outputSchema: z.object({
-    tree: z.string(),
-    truncated: z.boolean(),
-  }),
+  inputSchema: ListInputSchema,
+  outputSchema: ListOutputSchema,
   execute: async ({ path: searchPath, ignore }) => {
     const dir = resolve(searchPath ?? process.cwd());
     const extraIgnore = new Set<string>(ignore ?? []);

@@ -16,6 +16,27 @@ import type {
   UserMessage,
 } from "../messages";
 import { Dynamic } from "@opentui/solid";
+import {
+  Tool,
+  BashInputSchema,
+  BashOutputSchema,
+  EditInputSchema,
+  EditOutputSchema,
+  WriteInputSchema,
+  WriteOutputSchema,
+  GlobInputSchema,
+  GlobOutputSchema,
+  GrepInputSchema,
+  GrepOutputSchema,
+  ListInputSchema,
+  ListOutputSchema,
+  WebsearchInputSchema,
+  WebsearchOutputSchema,
+  WebfetchInputSchema,
+  WebfetchOutputSchema,
+  ReadInputSchema,
+  ReadMetadataSchema,
+} from "../tools";
 
 const syntaxStyle = SyntaxStyle.fromStyles({
   "markup.heading.1": { fg: RGBA.fromHex("#58A6FF"), bold: true },
@@ -96,13 +117,6 @@ function UserMessage(props: { message: UserMessage }) {
   );
 }
 
-function parseArgs<T = Record<string, unknown>>(raw: string): T {
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return {} as T;
-  }
-}
 
 function ToolCallBox(props: {
   icon: string;
@@ -137,9 +151,7 @@ function ToolCallBox(props: {
 
 function ReadCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    parseArgs<{ filePath?: string; offset?: number; limit?: number }>(
-      props.message.arguments,
-    ),
+    Tool.parseInput(ReadInputSchema, props.message.arguments),
   );
   const detail = createMemo(() => {
     const extra: string[] = [];
@@ -159,7 +171,7 @@ function ReadCall(props: { message: FunctionCallMessage }) {
 
 function BashCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    parseArgs<{ command?: string }>(props.message.arguments),
+    Tool.parseInput(BashInputSchema, props.message.arguments),
   );
   return (
     <ToolCallBox
@@ -172,13 +184,9 @@ function BashCall(props: { message: FunctionCallMessage }) {
 
 function EditCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    parseArgs<{ filePath?: string; replaceAll?: boolean }>(
-      props.message.arguments,
-    ),
+    Tool.parseInput(EditInputSchema, props.message.arguments),
   );
-  const detail = createMemo(() =>
-    args().replaceAll ? "(replaceAll)" : "",
-  );
+  const detail = createMemo(() => (args().replaceAll ? "(replaceAll)" : ""));
   return (
     <ToolCallBox
       icon="✎"
@@ -191,7 +199,7 @@ function EditCall(props: { message: FunctionCallMessage }) {
 
 function WriteCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    parseArgs<{ filePath?: string }>(props.message.arguments),
+    Tool.parseInput(WriteInputSchema, props.message.arguments),
   );
   return (
     <ToolCallBox
@@ -204,9 +212,7 @@ function WriteCall(props: { message: FunctionCallMessage }) {
 
 function GrepCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    parseArgs<{ pattern?: string; path?: string; include?: string }>(
-      props.message.arguments,
-    ),
+    Tool.parseInput(GrepInputSchema, props.message.arguments),
   );
   const detail = createMemo(() => {
     const parts: string[] = [];
@@ -226,11 +232,9 @@ function GrepCall(props: { message: FunctionCallMessage }) {
 
 function GlobCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    parseArgs<{ pattern?: string; path?: string }>(props.message.arguments),
+    Tool.parseInput(GlobInputSchema, props.message.arguments),
   );
-  const detail = createMemo(() =>
-    args().path ? `in ${args().path}` : "",
-  );
+  const detail = createMemo(() => (args().path ? `in ${args().path}` : ""));
   return (
     <ToolCallBox
       icon="*"
@@ -243,7 +247,7 @@ function GlobCall(props: { message: FunctionCallMessage }) {
 
 function ListCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    parseArgs<{ path?: string }>(props.message.arguments),
+    Tool.parseInput(ListInputSchema, props.message.arguments),
   );
   const cwd = process.cwd();
   return (
@@ -257,9 +261,7 @@ function ListCall(props: { message: FunctionCallMessage }) {
 
 function WebsearchCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    parseArgs<{ query?: string; type?: string; numResults?: number }>(
-      props.message.arguments,
-    ),
+    Tool.parseInput(WebsearchInputSchema, props.message.arguments),
   );
   const detail = createMemo(() => {
     const parts: string[] = [];
@@ -279,7 +281,7 @@ function WebsearchCall(props: { message: FunctionCallMessage }) {
 
 function WebfetchCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    parseArgs<{ url?: string; format?: string }>(props.message.arguments),
+    Tool.parseInput(WebfetchInputSchema, props.message.arguments),
   );
   const detail = createMemo(() =>
     args().format && args().format !== "markdown" ? `(${args().format})` : "",
@@ -346,14 +348,15 @@ function normalizePath(filepath: string): string {
 }
 
 function ReadOutput(props: { message: FunctionCallOutputMessage }) {
-  const loaded = createMemo(() => {
-    const val = props.message.metadata?.loaded;
-    if (!Array.isArray(val)) return [];
-    return val.filter((p): p is string => typeof p === "string");
-  });
-  const truncated = createMemo(
-    () => props.message.metadata?.truncated === true,
+  const metadata = createMemo(() =>
+    ReadMetadataSchema.safeParse(props.message.metadata).data ?? {
+      preview: "",
+      truncated: false,
+      loaded: [],
+    },
   );
+  const loaded = createMemo(() => metadata().loaded);
+  const truncated = createMemo(() => metadata().truncated);
   return (
     <ToolOutputBox
       icon="→"
@@ -378,14 +381,12 @@ function ReadOutput(props: { message: FunctionCallOutputMessage }) {
 
 function BashOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    parseArgs<{ output?: string; exitCode?: number; timedOut?: boolean }>(
-      props.message.output,
-    ),
+    Tool.parseOutput(BashOutputSchema, props.message.output),
   );
   const summary = createMemo(() => {
-    if (result().timedOut) return "timed out";
-    const code = result().exitCode;
-    const preview = (result().output ?? "").slice(0, 60).replace(/\n/g, " ");
+    if (result()?.timedOut) return "timed out";
+    const code = result()?.exitCode;
+    const preview = (result()?.output ?? "").slice(0, 60).replace(/\n/g, " ");
     return `exit ${code ?? "?"} — ${preview || "(no output)"}`;
   });
   return <ToolOutputBox icon="$" summary={summary()} />;
@@ -393,13 +394,11 @@ function BashOutput(props: { message: FunctionCallOutputMessage }) {
 
 function EditOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    parseArgs<{ success?: boolean; replacements?: number }>(
-      props.message.output,
-    ),
+    Tool.parseOutput(EditOutputSchema, props.message.output),
   );
   const summary = createMemo(() =>
-    result().success
-      ? `${result().replacements ?? 1} replacement(s) made`
+    result()?.success
+      ? `${result()?.replacements ?? 1} replacement(s) made`
       : "edit failed",
   );
   return <ToolOutputBox icon="✎" summary={summary()} />;
@@ -407,21 +406,22 @@ function EditOutput(props: { message: FunctionCallOutputMessage }) {
 
 function WriteOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    parseArgs<{ path?: string; bytesWritten?: number }>(props.message.output),
+    Tool.parseOutput(WriteOutputSchema, props.message.output),
   );
-  const summary = createMemo(() =>
-    `wrote ${normalizePath(result().path ?? "")} (${result().bytesWritten ?? 0} bytes)`,
+  const summary = createMemo(
+    () =>
+      `wrote ${normalizePath(result()?.path ?? "")} (${result()?.bytesWritten ?? 0} bytes)`,
   );
   return <ToolOutputBox icon="+" summary={summary()} />;
 }
 
 function GrepOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    parseArgs<{ total?: number; truncated?: boolean }>(props.message.output),
+    Tool.parseOutput(GrepOutputSchema, props.message.output),
   );
   const summary = createMemo(() => {
-    const total = result().total ?? 0;
-    const trunc = result().truncated ? "+" : "";
+    const total = result()?.total ?? 0;
+    const trunc = result()?.truncated ? "+" : "";
     return `${total}${trunc} match${total !== 1 ? "es" : ""}`;
   });
   return <ToolOutputBox icon="⌕" summary={summary()} />;
@@ -429,11 +429,11 @@ function GrepOutput(props: { message: FunctionCallOutputMessage }) {
 
 function GlobOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    parseArgs<{ files?: string[]; truncated?: boolean }>(props.message.output),
+    Tool.parseOutput(GlobOutputSchema, props.message.output),
   );
   const summary = createMemo(() => {
-    const count = result().files?.length ?? 0;
-    const trunc = result().truncated ? "+" : "";
+    const count = result()?.files?.length ?? 0;
+    const trunc = result()?.truncated ? "+" : "";
     return `${count}${trunc} file${count !== 1 ? "s" : ""}`;
   });
   return <ToolOutputBox icon="*" summary={summary()} />;
@@ -441,20 +441,20 @@ function GlobOutput(props: { message: FunctionCallOutputMessage }) {
 
 function ListOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    parseArgs<{ truncated?: boolean }>(props.message.output),
+    Tool.parseOutput(ListOutputSchema, props.message.output),
   );
-  const summary = createMemo(() =>
-    `listed${result().truncated ? " (truncated)" : ""}`,
+  const summary = createMemo(
+    () => `listed${result()?.truncated ? " (truncated)" : ""}`,
   );
   return <ToolOutputBox icon="≡" summary={summary()} />;
 }
 
 function WebsearchOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    parseArgs<{ results?: string }>(props.message.output),
+    Tool.parseOutput(WebsearchOutputSchema, props.message.output),
   );
   const summary = createMemo(() => {
-    const chars = result().results?.length ?? 0;
+    const chars = result()?.results?.length ?? 0;
     return chars > 0 ? `${chars} chars returned` : "no results";
   });
   return <ToolOutputBox icon="⌖" summary={summary()} />;
@@ -462,11 +462,11 @@ function WebsearchOutput(props: { message: FunctionCallOutputMessage }) {
 
 function WebfetchOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    parseArgs<{ content?: string; contentType?: string }>(props.message.output),
+    Tool.parseOutput(WebfetchOutputSchema, props.message.output),
   );
   const summary = createMemo(() => {
-    const ct = result().contentType ?? "";
-    const bytes = result().content?.length ?? 0;
+    const ct = result()?.contentType ?? "";
+    const bytes = result()?.content?.length ?? 0;
     return `${bytes} chars (${ct})`;
   });
   return <ToolOutputBox icon="↗" summary={summary()} />;

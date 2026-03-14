@@ -19,3 +19,59 @@ export const tools = [
   grepTool,
   globTool,
 ];
+
+export {
+  BashInputSchema,
+  BashOutputSchema,
+  type BashInput,
+  type BashOutput,
+} from "./bash/bash";
+export {
+  EditInputSchema,
+  EditOutputSchema,
+  type EditInput,
+  type EditOutput,
+} from "./edit/edit";
+export {
+  WriteInputSchema,
+  WriteOutputSchema,
+  type WriteInput,
+  type WriteOutput,
+} from "./write/write";
+export {
+  GlobInputSchema,
+  GlobOutputSchema,
+  type GlobInput,
+  type GlobOutput,
+} from "./glob/glob";
+export {
+  GrepInputSchema,
+  GrepOutputSchema,
+  type GrepInput,
+  type GrepOutput,
+} from "./grep/grep";
+export {
+  ListInputSchema,
+  ListOutputSchema,
+  type ListInput,
+  type ListOutput,
+} from "./ls/ls";
+export {
+  WebfetchInputSchema,
+  WebfetchOutputSchema,
+  type WebfetchInput,
+  type WebfetchOutput,
+} from "./webfetch/webfetch";
+export {
+  WebsearchInputSchema,
+  WebsearchOutputSchema,
+  type WebsearchInput,
+  type WebsearchOutput,
+} from "./websearch/websearch";
+export {
+  ReadInputSchema,
+  ReadMetadataSchema,
+  type ReadInput,
+  type ReadMetadata,
+} from "./read/read";
+export { Tool } from "./parse";

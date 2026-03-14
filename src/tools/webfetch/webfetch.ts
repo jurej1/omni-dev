@@ -4,27 +4,33 @@ import { z } from "zod";
 const MAX_RESPONSE_SIZE = 5 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+export const WebfetchInputSchema = z.object({
+  url: z.string().describe("The URL to fetch content from"),
+  format: z
+    .enum(["text", "markdown", "html"])
+    .default("markdown")
+    .describe(
+      "The format to return the content in (text, markdown, or html). Defaults to markdown.",
+    ),
+  timeoutMs: z
+    .number()
+    .optional()
+    .describe("Timeout in milliseconds (default: 30000, max: 120000)"),
+});
+export type WebfetchInput = z.infer<typeof WebfetchInputSchema>;
+
+export const WebfetchOutputSchema = z.object({
+  content: z.string(),
+  contentType: z.string(),
+});
+export type WebfetchOutput = z.infer<typeof WebfetchOutputSchema>;
+
 export const webfetchTool = tool({
   name: "webfetch",
   description:
     "Fetch content from a URL and return it as text, markdown, or raw HTML.",
-  inputSchema: z.object({
-    url: z.string().describe("The URL to fetch content from"),
-    format: z
-      .enum(["text", "markdown", "html"])
-      .default("markdown")
-      .describe(
-        "The format to return the content in (text, markdown, or html). Defaults to markdown.",
-      ),
-    timeoutMs: z
-      .number()
-      .optional()
-      .describe("Timeout in milliseconds (default: 30000, max: 120000)"),
-  }),
-  outputSchema: z.object({
-    content: z.string(),
-    contentType: z.string(),
-  }),
+  inputSchema: WebfetchInputSchema,
+  outputSchema: WebfetchOutputSchema,
   execute: async ({ url, format, timeoutMs }) => {
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
       throw new Error("URL must start with http:// or https://");
