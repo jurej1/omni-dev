@@ -34,7 +34,7 @@ export namespace OpenRouterClient {
     callback: (msg: Message) => void;
     onUsageData: (data: OpenResponsesUsage) => void;
   }) {
-    const model = "x-ai/grok-4.1-fast";
+    const model = "z-ai/glm-4.5-air:free";
     logger.log(`callModel: model=${model} inputLen=${data.length}`);
 
     try {
@@ -124,8 +124,10 @@ export namespace OpenRouterClient {
       }
 
       const response = await result.getResponse();
-      logger.log("Setting useag", response.usage);
-      onUsageData(response.usage);
+      logger.log("Setting usage", response.usage);
+      if (response.usage) {
+        onUsageData(response.usage);
+      }
     } catch (error) {
       logger.error("callModel error:", error);
       throw error;

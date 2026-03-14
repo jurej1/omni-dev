@@ -1,49 +1,112 @@
-import { createSignal, Show } from "solid-js";
+import { createSignal, onCleanup, Show } from "solid-js";
 import { useOpenRouter } from "../context/openrouter";
 import { createTextAttributes } from "@opentui/core";
 
-const boldAttributes = createTextAttributes({ bold: true });
+const bold = createTextAttributes({ bold: true });
+const dim = createTextAttributes({ dim: true });
 
 const theme = {
   text: "#E6EDF3",
-  textMuted: "#8B949E",
+  textMuted: "#6e7681",
   accent: "#38bdf8",
   success: "#4ade80",
+  warning: "#f59e0b",
+  divider: "#21262d",
 };
-export function Sidepanel() {
-  const { usage } = useOpenRouter();
-  const [cwd] = createSignal(process.cwd());
+
+const STATUS_FRAMES = ["◆", "◇"];
+
+function StatusPulse() {
+  const [frame, setFrame] = createSignal(0);
+  const interval = setInterval(() => {
+    setFrame((f) => (f + 1) % STATUS_FRAMES.length);
+  }, 600);
+  onCleanup(() => clearInterval(interval));
 
   return (
-    <box padding={0} flexDirection="column" height="100%" width="100%" gap={1}>
-      <text fg={theme.success} attributes={boldAttributes}>
-        Omni
+    <text fg={theme.success} attributes={bold}>
+      {STATUS_FRAMES[frame()]}
+    </text>
+  );
+}
+
+function StatRow(props: {
+  label: string;
+  value: string | number;
+  accent?: boolean;
+}) {
+  return (
+    <box flexDirection="row" justifyContent="space-between" width="100%">
+      <text fg={theme.textMuted} attributes={dim}>
+        {props.label}
       </text>
+      <text fg={props.accent ? theme.accent : theme.text} attributes={bold}>
+        {props.value}
+      </text>
+    </box>
+  );
+}
 
-      <text fg={theme.textMuted}>CWD: {cwd()}</text>
+export function Sidepanel() {
+  const { usage, isStreaming } = useOpenRouter();
+  const [cwd] = createSignal(process.cwd().split("/").slice(-2).join("/"));
 
-      <Show
-        when={usage()}
-        fallback={<text fg={theme.textMuted}>No usage data</text>}
-      >
-        <box flexDirection="column">
-          <text fg={theme.accent} attributes={boldAttributes}>
-            Usage:
+  const totalTokens = () => usage()?.totalTokens ?? 0;
+  const inputTokens = () => usage()?.inputTokens ?? 0;
+  const outputTokens = () => usage()?.outputTokens ?? 0;
+
+  return (
+    <box padding={1} flexDirection="column" height="100%" width="100%" gap={1}>
+      {/* Header */}
+      <box flexDirection="row" gap={1} alignItems="center">
+        <StatusPulse />
+        <text fg={theme.success} attributes={bold}>
+          OMNI
+        </text>
+      </box>
+
+      {/* Status */}
+      <box flexDirection="row" justifyContent="space-between" width="100%">
+        <text fg={theme.textMuted} attributes={dim}>
+          STATUS
+        </text>
+        <Show
+          when={isStreaming()}
+          fallback={
+            <text fg={theme.success} attributes={bold}>
+              IDLE
+            </text>
+          }
+        >
+          <text fg={theme.warning} attributes={bold}>
+            STREAMING
           </text>
-          <box flexDirection="row" justifyContent="space-between">
-            <text fg={theme.text}>Tokens:</text>
-            <text fg={theme.text}>{usage()?.totalTokens}</text>
-          </box>
-          <box flexDirection="row" justifyContent="space-between">
-            <text fg={theme.text}>Input:</text>
-            <text fg={theme.text}>{usage()?.inputTokens}</text>
-          </box>
-          <box flexDirection="row" justifyContent="space-between">
-            <text fg={theme.text}>Output:</text>
-            <text fg={theme.text}>{usage()?.outputTokens}</text>
-          </box>
-        </box>
-      </Show>
+        </Show>
+      </box>
+
+      {/* CWD */}
+      <box flexDirection="column" width="100%">
+        <text fg={theme.textMuted} attributes={dim}>
+          CWD
+        </text>
+        <text fg={theme.text}>~/{cwd()}</text>
+      </box>
+
+      {/* Usage */}
+      <box flexDirection="column" width="100%" gap={0}>
+        <text fg={theme.textMuted} attributes={dim}>
+          TOKENS
+        </text>
+
+        <StatRow label="total" value={totalTokens()} accent />
+        <StatRow label="in" value={inputTokens()} />
+        <StatRow label="out" value={outputTokens()} />
+      </box>
+
+      {/* Footer */}
+      <text fg={theme.textMuted} attributes={dim}>
+        x-ai/grok-4.1-fast
+      </text>
     </box>
   );
 }

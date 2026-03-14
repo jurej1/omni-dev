@@ -33,7 +33,7 @@ function ThinkingIndicator() {
   });
 
   return (
-    <box flexDirection="row" gap={1} padding={0}>
+    <box flexDirection="row" gap={1} padding={0} alignItems="center">
       <text fg="#38bdf8" attributes={boldAttributes}>
         {SPINNER_FRAMES[frame()]}
       </text>
@@ -74,6 +74,7 @@ export function Input() {
             focused={true}
             placeholder={PLACEHOLDERS[0]}
             minHeight={1}
+            maxHeight={6}
             onSubmit={submit}
             onMouseDown={(e) => e.target.focus()}
             ref={input}
