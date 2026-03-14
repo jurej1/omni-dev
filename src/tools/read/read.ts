@@ -36,23 +36,21 @@ export const ReadOutputSchema = z.object({
   title: z.string(),
   output: z.string(),
   metadata: ReadMetadataSchema,
-  attachments: z
-    .array(
-      z.object({
-        type: z.literal("file"),
-        mime: z.string(),
-        url: z.string(),
-      }),
-    )
-    .optional(),
+  attachments: z.array(
+    z.object({
+      type: z.string(),
+      mime: z.string(),
+      url: z.string(),
+    }),
+  ),
 });
 export type ReadOutput = z.infer<typeof ReadOutputSchema>;
 
 export const readTool = tool({
   name: "read",
-  description: "",
+  description: "Read the contents of a file",
   inputSchema: ReadInputSchema,
-
+  outputSchema: ReadOutputSchema,
   execute: async (params) => {
     if (params.offset !== undefined && params.offset < 1) {
       throw new Error("offset must be greater than or equal to 1");
@@ -132,6 +130,7 @@ export const readTool = tool({
           truncated,
           loaded: [filepath],
         },
+        attachments: [],
       };
     }
 
@@ -252,6 +251,7 @@ export const readTool = tool({
         truncated,
         loaded: [filepath],
       },
+      attachments: [],
     };
   },
 });
