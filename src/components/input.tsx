@@ -444,6 +444,12 @@ export function Input() {
               <text fg={Colors.blueGray} attributes={dimAttributes}>
                 tab to switch · @ for files · / for commands · enter to send
               </text>
+              <text fg={Colors.blueGray} attributes={dimAttributes}>
+                │
+              </text>
+              <text fg={Colors.blueGray} attributes={dimAttributes}>
+                {selectedModel()}
+              </text>
             </box>
           </>
         }
