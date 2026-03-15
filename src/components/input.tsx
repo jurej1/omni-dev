@@ -13,6 +13,9 @@ import {
 import { FileAutocomplete } from "./autocomplete";
 import { CommandsAutocomplete } from "./commands";
 import { Colors } from "../utils/colors";
+import { ModelPicker } from "./model-picker";
+import { useModel } from "../context/model";
+import type { ModelId } from "../context/model";
 
 const PLACEHOLDERS = [
   "Fix a TODO in the codebase",
@@ -105,6 +108,16 @@ export function Input() {
     filteredCommands,
   } = useCommands();
 
+  const {
+    selectedModel,
+    setSelectedModel,
+    modelPickerVisible,
+    setModelPickerVisible,
+    selectedPickerIndex,
+    setSelectedPickerIndex,
+    filteredModels,
+  } = useModel();
+
   const handleContentChange = () => {
     const text = input.plainText;
 
@@ -173,6 +186,41 @@ export function Input() {
 
   const handleKeyDown = (e: KeyEvent) => {
     const name = e.name?.toLowerCase();
+
+    if (modelPickerVisible()) {
+      const models = filteredModels();
+
+      if (name === "up") {
+        e.preventDefault();
+        setSelectedPickerIndex((idx) =>
+          idx === 0 ? models.length - 1 : idx - 1,
+        );
+        return;
+      }
+
+      if (name === "down") {
+        e.preventDefault();
+        setSelectedPickerIndex((idx) =>
+          idx === models.length - 1 ? 0 : idx + 1,
+        );
+        return;
+      }
+
+      if (name === "escape") {
+        e.preventDefault();
+        setModelPickerVisible(false);
+        return;
+      }
+
+      if (name === "return") {
+        e.preventDefault();
+        const selected = models[selectedPickerIndex()];
+        if (selected) handleModelSelect(selected);
+        return;
+      }
+
+      return;
+    }
 
     if (name === "tab") {
       if (commandsVisible()) {
@@ -308,6 +356,11 @@ export function Input() {
     command.action();
   };
 
+  const handleModelSelect = (model: ModelId) => {
+    setSelectedModel(model);
+    setModelPickerVisible(false);
+  };
+
   const handleSelect = async (path: string) => {
     const currentCursor = input.cursorOffset;
     input.cursorOffset = autocompleteIndex();
@@ -366,6 +419,9 @@ export function Input() {
                 </Show>
                 <Show when={commandsVisible()}>
                   <CommandsAutocomplete onSelect={handleCommandSelect} />
+                </Show>
+                <Show when={modelPickerVisible()}>
+                  <ModelPicker onSelect={handleModelSelect} />
                 </Show>
               </box>
             </box>
