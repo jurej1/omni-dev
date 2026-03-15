@@ -2,6 +2,7 @@ import { createSignal, onCleanup, Show } from "solid-js";
 import { useOpenRouter } from "../context/openrouter";
 import { createTextAttributes } from "@opentui/core";
 import { Colors } from "../utils/colors";
+import { useModel } from "../context/model";
 
 const bold = createTextAttributes({ bold: true });
 const dim = createTextAttributes({ dim: true });
@@ -56,6 +57,8 @@ export function Sidepanel() {
   const inputTokens = () => usage()?.inputTokens ?? 0;
   const outputTokens = () => usage()?.outputTokens ?? 0;
 
+  const { selectedModel } = useModel();
+
   return (
     <box padding={1} flexDirection="column" height="100%" width="100%" gap={1}>
       {/* Header */}
@@ -106,7 +109,7 @@ export function Sidepanel() {
 
       {/* Footer */}
       <text fg={theme.textMuted} attributes={dim}>
-        x-ai/grok-4.1-fast
+        {selectedModel()}
       </text>
     </box>
   );
