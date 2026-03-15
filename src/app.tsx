@@ -3,6 +3,7 @@ import { Messages } from "./components/messages";
 import { Sidepanel } from "./components/sidepanel";
 import { MessagesProvider } from "./context/messages";
 import { SessionProvider } from "./context/session";
+import { ModelProvider } from "./context/model";
 import { OpenRouterProvider } from "./context/openrouter";
 import { AutocompleteProvider } from "./context/autocomplete";
 import { CommandsProvider } from "./context/commands";
@@ -12,13 +13,15 @@ export function App() {
   return (
     <MessagesProvider>
       <SessionProvider>
-        <OpenRouterProvider>
-          <AutocompleteProvider>
-            <CommandsProvider>
-              <AppShell />
-            </CommandsProvider>
-          </AutocompleteProvider>
-        </OpenRouterProvider>
+        <ModelProvider>
+          <OpenRouterProvider>
+            <AutocompleteProvider>
+              <CommandsProvider>
+                <AppShell />
+              </CommandsProvider>
+            </AutocompleteProvider>
+          </OpenRouterProvider>
+        </ModelProvider>
       </SessionProvider>
     </MessagesProvider>
   );
