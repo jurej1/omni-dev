@@ -11,6 +11,10 @@ export namespace FileScanner {
 
   let cachedFiles: string[] | null = null;
 
+  export function cached(): string[] | null {
+    return cachedFiles;
+  }
+
   export async function scanFiles(cwd: string): Promise<string[]> {
     if (cachedFiles) return cachedFiles;
 

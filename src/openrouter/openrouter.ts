@@ -7,6 +7,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
 import { SystemPrompt } from "../utils/system";
+import { FileScanner } from "../utils/file-scanner";
 
 type Tool = ReturnType<typeof tool>;
 
@@ -58,7 +59,7 @@ export namespace OpenRouterClient {
           },
           {
             role: "system",
-            content: `${process.cwd()} is the current working directory`,
+            content: `${process.cwd()} is the current working directory. And this are the files inside of it ${FileScanner.cached()}`,
           },
           ...data
             .filter((msg) => msg.type === "message")
