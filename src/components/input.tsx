@@ -448,7 +448,7 @@ export function Input() {
                 │
               </text>
               <text fg={Colors.blueGray} attributes={dimAttributes}>
-                {selectedModel()}
+                model: {selectedModel()}
               </text>
             </box>
           </>
