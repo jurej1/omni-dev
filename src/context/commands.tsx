@@ -6,6 +6,7 @@ import {
 } from "solid-js";
 import type { ParentComponent } from "solid-js";
 import { useMessages } from "./messages";
+import { useModel } from "./model";
 
 export type CommandDefinition = {
   name: string;
@@ -29,12 +30,21 @@ const CommandsContext = createContext<CommandsContextValue>();
 
 export const CommandsProvider: ParentComponent = (props) => {
   const { clearMessages } = useMessages();
+  const { setModelPickerVisible, setSelectedPickerIndex } = useModel();
 
   const COMMANDS: CommandDefinition[] = [
     {
       name: "clear",
       description: "Clear conversation history",
       action: clearMessages,
+    },
+    {
+      name: "models",
+      description: "Switch the active model",
+      action: () => {
+        setSelectedPickerIndex(0);
+        setModelPickerVisible(true);
+      },
     },
   ];
 
