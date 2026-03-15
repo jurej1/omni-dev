@@ -36,19 +36,20 @@ async function saveRawOutput(item: object): Promise<void> {
 
 export namespace OpenRouterClient {
   export async function callModel({
+    model,
     data,
     callback,
     onUsageData,
     tools: overrideTools,
     agentInstructions,
   }: {
+    model: string;
     data: Message[];
     callback: (msg: Message) => void;
     onUsageData: (data: OpenResponsesUsage) => void;
     tools?: Tool[];
     agentInstructions?: string;
   }) {
-    const model = "x-ai/grok-4.1-fast";
     logger.log(`callModel: model=${model}  inputLen=${data.length}`);
 
     const toolsList = overrideTools || tools;

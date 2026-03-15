@@ -6,6 +6,7 @@ import {
 } from "solid-js";
 import { useMessages } from "./messages";
 import { useSession } from "./session";
+import { useModel } from "./model";
 import { OpenRouterClient } from "../openrouter/openrouter";
 import type { Message } from "./messages";
 import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
@@ -21,6 +22,7 @@ export const OpenRouterContext = createContext<OpenRouterContextValue>();
 export const OpenRouterProvider: ParentComponent = (props) => {
   const { addMessage, messages } = useMessages();
   const { toolsForCurrentAgent, instructionsForCurrentAgent } = useSession();
+  const { selectedModel } = useModel();
   const [isStreaming, setIsStreaming] = createSignal(false);
   const [usage, setUsage] = createSignal<OpenResponsesUsage | undefined>(
     undefined,
@@ -41,6 +43,7 @@ export const OpenRouterProvider: ParentComponent = (props) => {
 
     try {
       await OpenRouterClient.callModel({
+        model: selectedModel(),
         data: messages(),
         callback: addMessage,
         onUsageData: setUsage,
