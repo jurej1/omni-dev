@@ -11,7 +11,7 @@ import type { Message } from "./messages";
 import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
 
 type OpenRouterContextValue = {
-  callModel: (message: string) => Promise<void>;
+  callModel: (message: string, files: string[]) => Promise<void>;
   isStreaming: () => boolean;
   usage: () => OpenResponsesUsage | undefined;
 };
@@ -26,7 +26,7 @@ export const OpenRouterProvider: ParentComponent = (props) => {
     undefined,
   );
 
-  const callModel = async (newMessage: string) => {
+  const callModel = async (newMessage: string, files: string[] = []) => {
     setIsStreaming(true);
 
     const userMessage: Message = {
@@ -34,6 +34,7 @@ export const OpenRouterProvider: ParentComponent = (props) => {
       id: `user-${Date.now()}`,
       role: "user",
       content: newMessage,
+      files,
     };
 
     addMessage(userMessage);

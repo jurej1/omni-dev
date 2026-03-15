@@ -1,4 +1,11 @@
-import { createContext, createMemo, createResource, createSignal, useContext } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  useContext,
+} from "solid-js";
 import type { ParentComponent } from "solid-js";
 import { FileScanner } from "../utils/file-scanner";
 
@@ -60,6 +67,7 @@ export const AutocompleteProvider: ParentComponent = (props) => {
 
 export function useAutocomplete() {
   const ctx = useContext(AutocompleteContext);
-  if (!ctx) throw new Error("useAutocomplete must be used inside AutocompleteProvider");
+  if (!ctx)
+    throw new Error("useAutocomplete must be used inside AutocompleteProvider");
   return ctx;
 }

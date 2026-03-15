@@ -14,16 +14,12 @@ export const MessageStatusSchema = z.enum([
 
 export type MessageStatus = z.infer<typeof MessageStatusSchema>;
 
-export const MetadataSchema = z.object({
-  agent: z.string().optional(),
-}).optional();
-
 export const UserMessageSchema = z.object({
   type: z.literal("message"),
   id: z.string(),
   role: z.literal("user"),
   content: z.string(),
-  metadata: MetadataSchema,
+  files: z.array(z.string()).optional(),
 });
 
 export const MessageSchema = z.object({
@@ -37,7 +33,6 @@ export const MessageSchema = z.object({
       OpenAIResponsesRefusalContent$inboundSchema,
     ]),
   ),
-  metadata: MetadataSchema,
 });
 
 export const FunctionCallSchema = z.object({
@@ -47,7 +42,6 @@ export const FunctionCallSchema = z.object({
   name: z.string(),
   arguments: z.string(),
   status: MessageStatusSchema.optional(),
-  metadata: MetadataSchema,
 });
 
 export const ReasoningSchema = z.object({
@@ -56,7 +50,6 @@ export const ReasoningSchema = z.object({
   summary: z.array(ReasoningSummaryText$inboundSchema),
   status: MessageStatusSchema.optional(),
   content: z.array(ReasoningTextContent$inboundSchema),
-  metadata: MetadataSchema,
 });
 
 export const FunctionCallOutputSchema = z.object({

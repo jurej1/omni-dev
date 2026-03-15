@@ -88,6 +88,7 @@ export function Input() {
     setSelectedIndex,
     setMentionedFiles,
     filteredOptions,
+    mentionedFiles,
   } = useAutocomplete();
 
   const handleContentChange = () => {
@@ -209,7 +210,7 @@ export function Input() {
   const submit = async () => {
     if (isStreaming()) return;
     const rawText = input.plainText;
-    callModel(rawText);
+    callModel(rawText, mentionedFiles());
     input.clear();
     setMentionedFiles([]);
   };
