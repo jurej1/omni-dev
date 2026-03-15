@@ -5,9 +5,15 @@ import { Message } from "../context/messages";
 import { logger } from "../logger";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
-import { OpenResponsesUsage } from "@openrouter/sdk/esm/models";
-import { SystemPrompt } from "../utils/system";
+import {
+  OpenResponsesFunctionCallOutput,
+  OpenResponsesFunctionToolCall,
+  OpenResponsesReasoning,
+  OpenResponsesUsage,
+} from "@openrouter/sdk/esm/models";
+
 import { FileScanner } from "../utils/file-scanner";
+import { SystemPrompt } from "../utils/system";
 
 type Tool = ReturnType<typeof tool>;
 
@@ -62,20 +68,49 @@ export namespace OpenRouterClient {
             content: `${process.cwd()} is the current working directory. And this are the files inside of it ${FileScanner.cached()}`,
           },
           ...data
-            .filter((msg) => msg.type === "message")
             .map((msg) => {
-              if (msg.role === "user") {
-                return { role: msg.role, content: msg.content };
-              } else {
-                return {
-                  role: msg.role,
-                  content: msg.content
-                    .filter((m) => m.type === "output_text")
-                    .map((m) => m.text)
-                    .join(""),
-                };
+              switch (msg.type) {
+                case "message": {
+                  if (msg.role === "user") {
+                    return { role: msg.role, content: msg.content };
+                  } else {
+                    return {
+                      role: msg.role,
+                      content: msg.content
+                        .filter((m) => m.type === "output_text")
+                        .map((m) => m.text)
+                        .join(""),
+                    };
+                  }
+                }
+                case "function_call": {
+                  return {
+                    type: "function_call",
+                    callId: msg.callId,
+                    name: msg.name,
+                    id: msg.id,
+                    arguments: msg.arguments,
+                  } as OpenResponsesFunctionToolCall;
+                }
+                case "function_call_output": {
+                  return {
+                    type: "function_call_output",
+                    callId: msg.callId,
+                    output: msg.output,
+                  } as OpenResponsesFunctionCallOutput;
+                }
+                case "reasoning":
+                  return {
+                    id: msg.id,
+                    summary: msg.summary,
+                    type: msg.type,
+                    content: msg.content,
+                  } as OpenResponsesReasoning;
+                default:
+                  return null;
               }
-            }),
+            })
+            .filter((msg) => msg !== null),
         ],
         tools: toolsList,
       });
