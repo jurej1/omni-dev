@@ -5,6 +5,7 @@ import { MessagesProvider } from "./context/messages";
 import { SessionProvider } from "./context/session";
 import { OpenRouterProvider } from "./context/openrouter";
 import { AutocompleteProvider } from "./context/autocomplete";
+import { CommandsProvider } from "./context/commands";
 import { Colors } from "./utils/colors";
 
 export function App() {
@@ -13,7 +14,9 @@ export function App() {
       <SessionProvider>
         <OpenRouterProvider>
           <AutocompleteProvider>
-            <AppShell />
+            <CommandsProvider>
+              <AppShell />
+            </CommandsProvider>
           </AutocompleteProvider>
         </OpenRouterProvider>
       </SessionProvider>

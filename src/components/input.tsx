@@ -3,12 +3,15 @@ import { useOpenRouter } from "../context/openrouter";
 import { useSession } from "../context/session";
 import { AgentTool } from "../utils/agent";
 import { useAutocomplete } from "../context/autocomplete";
+import { useCommands } from "../context/commands";
+import type { CommandDefinition } from "../context/commands";
 import {
   TextareaRenderable,
   createTextAttributes,
   KeyEvent,
 } from "@opentui/core";
 import { FileAutocomplete } from "./autocomplete";
+import { CommandsAutocomplete } from "./commands";
 import { Colors } from "../utils/colors";
 
 const PLACEHOLDERS = [
@@ -91,8 +94,35 @@ export function Input() {
     mentionedFiles,
   } = useAutocomplete();
 
+  const {
+    commandsVisible,
+    setCommandsVisible,
+    commandsIndex,
+    setCommandsIndex,
+    setCommandsQuery,
+    selectedCommandIndex,
+    setSelectedCommandIndex,
+    filteredCommands,
+  } = useCommands();
+
   const handleContentChange = () => {
     const text = input.plainText;
+
+    if (commandsVisible()) {
+      const cursor = input.cursorOffset;
+      if (cursor <= commandsIndex()) {
+        setCommandsVisible(false);
+        return;
+      }
+      const between = text.slice(commandsIndex(), cursor);
+      if (between.match(/\s/)) {
+        setCommandsVisible(false);
+        return;
+      }
+      setCommandsQuery(between.slice(1));
+      return;
+    }
+
     if (autocompleteVisible()) {
       const cursor = input.cursorOffset;
       if (cursor <= autocompleteIndex()) {
@@ -112,6 +142,21 @@ export function Input() {
     if (cursor === 0) return;
 
     const textBefore = text.slice(0, cursor);
+
+    const lastSlashIndex = textBefore.lastIndexOf("/");
+    if (lastSlashIndex !== -1) {
+      const between = textBefore.slice(lastSlashIndex);
+      const before =
+        lastSlashIndex === 0 ? undefined : text[lastSlashIndex - 1];
+      if ((before === undefined || /\s/.test(before)) && !between.match(/\s/)) {
+        setCommandsIndex(lastSlashIndex);
+        setCommandsQuery(between.slice(1));
+        setSelectedCommandIndex(0);
+        setCommandsVisible(true);
+        return;
+      }
+    }
+
     const lastAtIndex = textBefore.lastIndexOf("@");
     if (lastAtIndex === -1) return;
 
@@ -130,6 +175,13 @@ export function Input() {
     const name = e.name?.toLowerCase();
 
     if (name === "tab") {
+      if (commandsVisible()) {
+        e.preventDefault();
+        const commands = filteredCommands();
+        const selected = commands[selectedCommandIndex()];
+        if (selected) handleCommandSelect(selected);
+        return;
+      }
       if (!autocompleteVisible()) {
         e.preventDefault();
         const current = currentAgentName().toLowerCase();
@@ -143,7 +195,22 @@ export function Input() {
       return;
     }
 
-    if (!autocompleteVisible() && name === "@") {
+    if (!commandsVisible() && !autocompleteVisible() && name === "/") {
+      const cursor = input.cursorOffset;
+      const charBefore =
+        cursor === 0 ? undefined : input.getTextRange(cursor - 1, cursor);
+      const canTrigger =
+        charBefore === undefined || charBefore === "" || /\s/.test(charBefore);
+      if (canTrigger) {
+        setCommandsIndex(cursor);
+        setCommandsQuery("");
+        setSelectedCommandIndex(0);
+        setCommandsVisible(true);
+      }
+      return;
+    }
+
+    if (!commandsVisible() && !autocompleteVisible() && name === "@") {
       const cursor = input.cursorOffset;
       const charBefore =
         cursor === 0 ? undefined : input.getTextRange(cursor - 1, cursor);
@@ -155,6 +222,41 @@ export function Input() {
         setSelectedIndex(0);
         setAutocompleteVisible(true);
       }
+      return;
+    }
+
+    if (commandsVisible()) {
+      const commands = filteredCommands();
+
+      if (name === "up") {
+        e.preventDefault();
+        setSelectedCommandIndex((idx) =>
+          idx === 0 ? commands.length - 1 : idx - 1,
+        );
+        return;
+      }
+
+      if (name === "down") {
+        e.preventDefault();
+        setSelectedCommandIndex((idx) =>
+          idx === commands.length - 1 ? 0 : idx + 1,
+        );
+        return;
+      }
+
+      if (name === "escape") {
+        e.preventDefault();
+        setCommandsVisible(false);
+        return;
+      }
+
+      if (name === "return") {
+        e.preventDefault();
+        const selected = commands[selectedCommandIndex()];
+        if (selected) handleCommandSelect(selected);
+        return;
+      }
+
       return;
     }
 
@@ -186,6 +288,24 @@ export function Input() {
       if (selected) handleSelect(selected);
       return;
     }
+  };
+
+  const handleCommandSelect = (command: CommandDefinition) => {
+    const currentCursor = input.cursorOffset;
+    input.cursorOffset = commandsIndex();
+    const startCursor = input.logicalCursor;
+    input.cursorOffset = currentCursor;
+    const endCursor = input.logicalCursor;
+
+    input.deleteRange(
+      startCursor.row,
+      startCursor.col,
+      endCursor.row,
+      endCursor.col,
+    );
+
+    setCommandsVisible(false);
+    command.action();
   };
 
   const handleSelect = async (path: string) => {
@@ -244,6 +364,9 @@ export function Input() {
                 <Show when={autocompleteVisible()}>
                   <FileAutocomplete onSelect={handleSelect} />
                 </Show>
+                <Show when={commandsVisible()}>
+                  <CommandsAutocomplete onSelect={handleCommandSelect} />
+                </Show>
               </box>
             </box>
 
@@ -259,11 +382,11 @@ export function Input() {
               <text fg={agent().color} attributes={boldAttributes}>
                 {agent().sigil} {agent().label}
               </text>
-              <text fg="#334155" attributes={dimAttributes}>
+              <text fg={Colors.blueGray} attributes={dimAttributes}>
                 │
               </text>
-              <text fg="#334155" attributes={dimAttributes}>
-                tab to switch · @ for files · enter to send
+              <text fg={Colors.blueGray} attributes={dimAttributes}>
+                tab to switch · @ for files · / for commands · enter to send
               </text>
             </box>
           </>
