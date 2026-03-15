@@ -5,6 +5,7 @@ import { MessagesProvider } from "./context/messages";
 import { SessionProvider } from "./context/session";
 import { OpenRouterProvider } from "./context/openrouter";
 import { AutocompleteProvider } from "./context/autocomplete";
+import { Colors } from "./utils/colors";
 
 export function App() {
   return (
@@ -26,7 +27,7 @@ function AppShell() {
       flexDirection="row"
       height={"100%"}
       width={"100%"}
-      backgroundColor={"#171717"}
+      backgroundColor={Colors.primary}
       paddingLeft={2}
       gap={2}
       margin={0}
@@ -40,7 +41,12 @@ function AppShell() {
         </box>
       </box>
 
-      <box width={"20%"} borderStyle="single" flexShrink={0}>
+      <box
+        width={"20%"}
+        borderStyle="single"
+        flexShrink={0}
+        borderColor={Colors.borderColor}
+      >
         <Sidepanel />
       </box>
     </box>

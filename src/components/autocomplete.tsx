@@ -1,53 +1,53 @@
-import { createMemo, Index } from "solid-js";
+import { createMemo, Index, Show } from "solid-js";
+import { useAutocomplete } from "../context/autocomplete";
+import { Colors } from "../utils/colors";
 
 export type FileAutocompleteProps = {
-  visible: boolean;
-  options: string[];
-  selectedIndex: number;
   onSelect: (path: string) => void;
-  onDismiss: () => void;
 };
 
 export function FileAutocomplete(props: FileAutocompleteProps) {
-  const displayItems = createMemo(() => {
-    return props.options.slice(0, 10);
-  });
+  const { autocompleteVisible, filteredOptions, selectedIndex } =
+    useAutocomplete();
 
-  const boxHeight = createMemo(() => {
-    return Math.min(10, displayItems().length);
+  const displayItems = createMemo(() => {
+    return filteredOptions().slice(0, 10);
   });
 
   return (
     <box
-      visible={props.visible}
+      visible={autocompleteVisible()}
       position="absolute"
       bottom={2}
       left={0}
       right={0}
-      height={boxHeight()}
+      height={"auto"}
       zIndex={100}
+      backgroundColor={Colors.primary}
       borderStyle="single"
-      borderColor="#30363d"
+      borderColor={Colors.borderColor}
     >
-      <scrollbox height={"auto"} scrollbarOptions={{ visible: false }}>
-        <Index each={displayItems()}>
-          {(option, idx) => (
-            <box
-              paddingLeft={1}
-              paddingRight={1}
-              backgroundColor={
-                idx === props.selectedIndex ? "#1d4ed8" : undefined
-              }
-              onMouseDown={() => {
-                props.onSelect(option());
-              }}
-              onMouseUp={() => {}}
-            >
-              <text>{option()}</text>
-            </box>
-          )}
-        </Index>
-      </scrollbox>
+      <Show when={displayItems().length > 0} fallback={<text>No results</text>}>
+        <scrollbox height={"auto"} scrollbarOptions={{ visible: false }}>
+          <Index each={displayItems()}>
+            {(option, idx) => (
+              <box
+                paddingLeft={1}
+                paddingRight={1}
+                backgroundColor={
+                  idx === selectedIndex() ? "#1d4ed8" : undefined
+                }
+                onMouseDown={() => {
+                  props.onSelect(option());
+                }}
+                onMouseUp={() => {}}
+              >
+                <text>{option()}</text>
+              </box>
+            )}
+          </Index>
+        </scrollbox>
+      </Show>
     </box>
   );
 }

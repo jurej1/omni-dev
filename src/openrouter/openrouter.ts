@@ -41,7 +41,7 @@ export namespace OpenRouterClient {
     tools?: Tool[];
     agentInstructions?: string;
   }) {
-    const model = "arcee-ai/trinity-large-preview:free";
+    const model = "x-ai/grok-4.1-fast";
     logger.log(`callModel: model=${model}  inputLen=${data.length}`);
 
     const toolsList = overrideTools || tools;

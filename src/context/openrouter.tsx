@@ -20,11 +20,7 @@ export const OpenRouterContext = createContext<OpenRouterContextValue>();
 
 export const OpenRouterProvider: ParentComponent = (props) => {
   const { addMessage, messages } = useMessages();
-  const {
-    toolsForCurrentAgent,
-    instructionsForCurrentAgent,
-    currentAgentName,
-  } = useSession();
+  const { toolsForCurrentAgent, instructionsForCurrentAgent } = useSession();
   const [isStreaming, setIsStreaming] = createSignal(false);
   const [usage, setUsage] = createSignal<OpenResponsesUsage | undefined>(
     undefined,

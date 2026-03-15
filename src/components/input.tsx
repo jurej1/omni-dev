@@ -9,6 +9,7 @@ import {
   KeyEvent,
 } from "@opentui/core";
 import { FileAutocomplete } from "./autocomplete";
+import { Colors } from "../utils/colors";
 
 const PLACEHOLDERS = [
   "Fix a TODO in the codebase",
@@ -21,7 +22,6 @@ const THINKING_DOTS = ["   ", ".  ", ".. ", "..."];
 
 const boldAttributes = createTextAttributes({ bold: true });
 const dimAttributes = createTextAttributes({ dim: true });
-
 
 function ThinkingIndicator({ agent }: { agent: AgentTool.Definition | null }) {
   const [frame, setFrame] = createSignal(0);
@@ -58,10 +58,10 @@ function ThinkingIndicator({ agent }: { agent: AgentTool.Definition | null }) {
         <text fg="#475569" attributes={dimAttributes}>
           │
         </text>
-        <text fg="#38bdf8" attributes={boldAttributes}>
+        <text fg={Colors.streamingColor} attributes={boldAttributes}>
           {SPINNER_FRAMES[frame()]}
         </text>
-        <text fg="#38bdf8" attributes={boldAttributes}>
+        <text fg={Colors.streamingColor} attributes={boldAttributes}>
           thinking
         </text>
         <text fg="#64748b" attributes={dimAttributes}>
@@ -217,7 +217,7 @@ export function Input() {
   return (
     <box
       borderStyle="single"
-      borderColor={isStreaming() ? "#38bdf8" : "#1e293b"}
+      borderColor={isStreaming() ? Colors.streamingColor : Colors.borderColor}
       margin={0}
       padding={0}
       flexDirection="column"
@@ -241,13 +241,7 @@ export function Input() {
                   ref={input}
                 />
                 <Show when={autocompleteVisible()}>
-                  <FileAutocomplete
-                    visible={autocompleteVisible()}
-                    options={filteredOptions()}
-                    selectedIndex={selectedIndex()}
-                    onSelect={handleSelect}
-                    onDismiss={() => setAutocompleteVisible(false)}
-                  />
+                  <FileAutocomplete onSelect={handleSelect} />
                 </Show>
               </box>
             </box>
@@ -261,12 +255,8 @@ export function Input() {
               paddingBottom={0}
               alignItems="center"
             >
-              <text
-                fg={agent().color}
-                attributes={boldAttributes}
-              >
-                {agent().sigil}{" "}
-                {agent().label}
+              <text fg={agent().color} attributes={boldAttributes}>
+                {agent().sigil} {agent().label}
               </text>
               <text fg="#334155" attributes={dimAttributes}>
                 │

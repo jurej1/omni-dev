@@ -1,6 +1,7 @@
 import { createSignal, onCleanup, Show } from "solid-js";
 import { useOpenRouter } from "../context/openrouter";
 import { createTextAttributes } from "@opentui/core";
+import { Colors } from "../utils/colors";
 
 const bold = createTextAttributes({ bold: true });
 const dim = createTextAttributes({ dim: true });
@@ -8,7 +9,7 @@ const dim = createTextAttributes({ dim: true });
 const theme = {
   text: "#E6EDF3",
   textMuted: "#6e7681",
-  accent: "#38bdf8",
+  accent: Colors.streamingColor,
   success: "#4ade80",
   warning: "#f59e0b",
   divider: "#21262d",
