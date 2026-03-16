@@ -132,6 +132,14 @@ export function Input() {
   const handleContentChange = () => {
     const text = input.plainText;
 
+    const currentMentions = mentionedFiles();
+    if (currentMentions.length > 0) {
+      const remaining = currentMentions.filter((f) => text.includes("@" + f));
+      if (remaining.length !== currentMentions.length) {
+        setMentionedFiles(remaining);
+      }
+    }
+
     if (commandsVisible()) {
       const cursor = input.cursorOffset;
       if (cursor <= commandsIndex()) {

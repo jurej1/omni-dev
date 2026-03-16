@@ -5,7 +5,6 @@ import {
   createMemo,
   createResource,
   createEffect,
-  onCleanup,
 } from "solid-js";
 import type { ParentComponent } from "solid-js";
 import { OpenRouterClient } from "../openrouter/openrouter";
@@ -101,11 +100,14 @@ export const ModelProvider: ParentComponent = (props) => {
     }
   });
 
-  onCleanup(() => {
+  createEffect(() => {
     const model = selectedModel();
     if (model) {
       PreferencesUtil.saveSelectedModelId(model.id);
     }
+  });
+
+  createEffect(() => {
     PreferencesUtil.saveReasoningEffort(reasoningEffort());
   });
 
