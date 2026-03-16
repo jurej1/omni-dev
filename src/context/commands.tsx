@@ -1,14 +1,13 @@
-import {
-  createContext,
-  createMemo,
-  createSignal,
-  useContext,
-} from "solid-js";
+import { createContext, createMemo, createSignal, useContext } from "solid-js";
 import type { ParentComponent } from "solid-js";
+import fs from "fs";
+import path from "path";
 import { useMessages } from "./messages";
 import { useModel } from "./model";
+import { useOpenRouter } from "./openrouter";
 import { TodoUtil } from "../storage/todo";
 import { SessionUtil } from "../utils/session";
+import DESCRIPTION from "../prompts/init.txt";
 
 export type CommandDefinition = {
   name: string;
@@ -32,7 +31,13 @@ const CommandsContext = createContext<CommandsContextValue>();
 
 export const CommandsProvider: ParentComponent = (props) => {
   const { clearMessages } = useMessages();
-  const { setModelPickerVisible, setSelectedPickerIndex, setEffortPickerVisible, setSelectedEffortIndex } = useModel();
+  const {
+    setModelPickerVisible,
+    setSelectedPickerIndex,
+    setEffortPickerVisible,
+    setSelectedEffortIndex,
+  } = useModel();
+  const { callModel } = useOpenRouter();
 
   const COMMANDS: CommandDefinition[] = [
     {
@@ -59,6 +64,14 @@ export const CommandsProvider: ParentComponent = (props) => {
         setEffortPickerVisible(true);
       },
     },
+    {
+      name: "init",
+      description: "Analyze codebase and create AGENTS.md",
+      action: () => {
+        const prompt = DESCRIPTION.replace("${cwd}", process.cwd());
+        callModel(prompt, []);
+      },
+    },
   ];
 
   const [commandsVisible, setCommandsVisible] = createSignal(false);
@@ -70,7 +83,10 @@ export const CommandsProvider: ParentComponent = (props) => {
     if (!commandsVisible()) return [];
     const q = commandsQuery().toLowerCase();
     if (!q) return COMMANDS.slice(0, 10);
-    return COMMANDS.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 10);
+    return COMMANDS.filter((c) => c.name.toLowerCase().includes(q)).slice(
+      0,
+      10,
+    );
   });
 
   return (
@@ -94,7 +110,6 @@ export const CommandsProvider: ParentComponent = (props) => {
 
 export function useCommands() {
   const ctx = useContext(CommandsContext);
-  if (!ctx)
-    throw new Error("useCommands must be used inside CommandsProvider");
+  if (!ctx) throw new Error("useCommands must be used inside CommandsProvider");
   return ctx;
 }
