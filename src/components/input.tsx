@@ -14,8 +14,11 @@ import { FileAutocomplete } from "./autocomplete";
 import { CommandsAutocomplete } from "./commands";
 import { Colors } from "../utils/colors";
 import { ModelPicker } from "./model-picker";
+import { EffortPicker } from "./effort-picker";
 import { useModel } from "../context/model";
 import type { ModelId } from "../context/model";
+import { REASONING_EFFORT_LEVELS } from "../context/model";
+import type { ReasoningEffort } from "../context/model";
 
 const PLACEHOLDERS = [
   "Fix a TODO in the codebase",
@@ -118,6 +121,12 @@ export function Input() {
     filteredModels,
     reasoningEnabled,
     setReasoningEnabled,
+    effortPickerVisible,
+    setEffortPickerVisible,
+    selectedEffortIndex,
+    setSelectedEffortIndex,
+    reasoningEffort,
+    setReasoningEffort,
   } = useModel();
 
   const handleContentChange = () => {
@@ -186,8 +195,48 @@ export function Input() {
     }
   };
 
+  const handleEffortSelect = (effort: ReasoningEffort) => {
+    setReasoningEffort(effort);
+    setEffortPickerVisible(false);
+  };
+
   const handleKeyDown = (e: KeyEvent) => {
     const name = e.name?.toLowerCase();
+
+    if (effortPickerVisible()) {
+      const levels = [...REASONING_EFFORT_LEVELS];
+
+      if (name === "up") {
+        e.preventDefault();
+        setSelectedEffortIndex((idx) =>
+          idx === 0 ? levels.length - 1 : idx - 1,
+        );
+        return;
+      }
+
+      if (name === "down") {
+        e.preventDefault();
+        setSelectedEffortIndex((idx) =>
+          idx === levels.length - 1 ? 0 : idx + 1,
+        );
+        return;
+      }
+
+      if (name === "escape") {
+        e.preventDefault();
+        setEffortPickerVisible(false);
+        return;
+      }
+
+      if (name === "return") {
+        e.preventDefault();
+        const selected = [...REASONING_EFFORT_LEVELS][selectedEffortIndex()];
+        if (selected) handleEffortSelect(selected);
+        return;
+      }
+
+      return;
+    }
 
     if (modelPickerVisible()) {
       const models = filteredModels();
@@ -431,6 +480,9 @@ export function Input() {
                 <Show when={modelPickerVisible()}>
                   <ModelPicker onSelect={handleModelSelect} />
                 </Show>
+                <Show when={effortPickerVisible()}>
+                  <EffortPicker onSelect={handleEffortSelect} />
+                </Show>
               </box>
             </box>
 
@@ -459,6 +511,14 @@ export function Input() {
               <Show when={reasoningEnabled()}>
                 <text fg={Colors.streamingColor} attributes={boldAttributes}>
                   🧠
+                </text>
+              </Show>
+              <Show when={reasoningEnabled()}>
+                <text fg={Colors.blueGray} attributes={dimAttributes}>
+                  │
+                </text>
+                <text fg={Colors.blueGray} attributes={dimAttributes}>
+                  effort: {reasoningEffort()}
                 </text>
               </Show>
             </box>
