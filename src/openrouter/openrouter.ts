@@ -1,4 +1,5 @@
 import { OpenRouter, tool } from "@openrouter/sdk";
+import type { Model } from "@openrouter/sdk/esm/models/model";
 import { tools } from "../tools";
 import { MessageStatus } from "../messages";
 import type { ReasoningEffort } from "../context/model";
@@ -36,6 +37,24 @@ async function saveRawOutput(item: object): Promise<void> {
 }
 
 export namespace OpenRouterClient {
+  function isChatModel(model: Model): boolean {
+    const { inputModalities, outputModalities } = model.architecture;
+    return (
+      inputModalities.includes("text") &&
+      outputModalities.includes("text") &&
+      !outputModalities.includes("embeddings")
+    );
+  }
+
+  function isFreeModel(model: Model): boolean {
+    return model.pricing?.prompt === "0";
+  }
+
+  export async function listModels(): Promise<Model[]> {
+    const response = await openrouter.models.list();
+    return response.data.filter(isChatModel);
+  }
+
   export async function callModel({
     model,
     data,
@@ -45,7 +64,6 @@ export namespace OpenRouterClient {
     agentInstructions,
     reasoningEnabled,
     reasoningEffort,
-    sessionId,
   }: {
     model: string;
     data: Message[];
@@ -55,7 +73,6 @@ export namespace OpenRouterClient {
     agentInstructions?: string;
     reasoningEnabled?: boolean;
     reasoningEffort?: ReasoningEffort;
-    sessionId: string;
   }) {
     logger.log(`callModel: model=${model}  inputLen=${data.length}`);
 

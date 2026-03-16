@@ -3,12 +3,19 @@ import type { ReasoningMessage } from "../../messages";
 import { theme, dimItalic } from "./shared";
 
 export function ReasoningItem(props: { message: ReasoningMessage }) {
-  const content = createMemo(() =>
-    props.message.summary
+  const content = createMemo(() => {
+    const summaryText = (props.message.summary ?? [])
       .filter((s) => s.type === "summary_text")
       .map((s) => (s as { type: "summary_text"; text: string }).text)
-      .join(""),
-  );
+      .join("");
+
+    if (summaryText) return summaryText;
+
+    return (props.message.content ?? [])
+      .filter((c) => c.type === "reasoning_text")
+      .map((c) => (c as { type: "reasoning_text"; text: string }).text)
+      .join("");
+  });
 
   return (
     <box

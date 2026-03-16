@@ -53,6 +53,7 @@ function StatRow(props: {
   );
 }
 
+
 export function Sidepanel() {
   const { usage, isStreaming } = useOpenRouter();
   const [cwd] = createSignal(process.cwd().split("/").slice(-2).join("/"));
@@ -63,6 +64,24 @@ export function Sidepanel() {
 
   const { selectedModel } = useModel();
   const { sessionId } = useSession();
+
+  const cost = () => {
+    const model = selectedModel();
+    const u = usage();
+    if (!model || !u) return null;
+    const promptPrice = parseFloat(model.pricing?.prompt ?? "0");
+    const completionPrice = parseFloat(model.pricing?.completion ?? "0");
+    const total =
+      inputTokens() * promptPrice + outputTokens() * completionPrice;
+    return `$${total.toFixed(4)}`;
+  };
+
+  const contextPct = () => {
+    const model = selectedModel();
+    const contextLength = model?.contextLength;
+    if (!contextLength || totalTokens() === 0) return null;
+    return Math.min(100, (totalTokens() / contextLength) * 100);
+  };
 
   return (
     <box padding={1} flexDirection="column" height="100%" width="100%" gap={1}>
@@ -118,11 +137,24 @@ export function Sidepanel() {
         <StatRow label="total" value={totalTokens()} accent />
         <StatRow label="in" value={inputTokens()} />
         <StatRow label="out" value={outputTokens()} />
+        <Show when={cost()}>
+          <StatRow label="cost" value={cost()!} />
+        </Show>
+        <Show when={contextPct() !== null}>
+          <box flexDirection="row" justifyContent="space-between" width="100%">
+            <text fg={theme.textMuted} attributes={dim}>
+              ctx
+            </text>
+            <text fg={theme.text}>
+              {contextPct()!.toFixed(0)}%
+            </text>
+          </box>
+        </Show>
       </box>
 
       {/* Footer */}
       <text fg={theme.textMuted} attributes={dim}>
-        {selectedModel()}
+        {selectedModel()?.id}
       </text>
 
       {/* Todos */}

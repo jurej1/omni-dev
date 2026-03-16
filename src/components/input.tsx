@@ -16,9 +16,9 @@ import { Colors } from "../utils/colors";
 import { ModelPicker } from "./model-picker";
 import { EffortPicker } from "./effort-picker";
 import { useModel } from "../context/model";
-import type { ModelId } from "../context/model";
 import { REASONING_EFFORT_LEVELS } from "../context/model";
 import type { ReasoningEffort } from "../context/model";
+import { Model } from "@openrouter/sdk/esm/models";
 
 const PLACEHOLDERS = [
   "Fix a TODO in the codebase",
@@ -73,7 +73,7 @@ function ThinkingIndicator({ agent }: { agent: AgentTool.Definition | null }) {
         <text fg={Colors.streamingColor} attributes={boldAttributes}>
           thinking
         </text>
-        <text fg="#64748b" attributes={dimAttributes}>
+        <text fg={Colors.streamingColor} attributes={dimAttributes}>
           {THINKING_DOTS[dots()]}
         </text>
       </box>
@@ -413,7 +413,7 @@ export function Input() {
     command.action();
   };
 
-  const handleModelSelect = (model: ModelId) => {
+  const handleModelSelect = (model: Model) => {
     setSelectedModel(model);
     setModelPickerVisible(false);
   };
@@ -502,7 +502,7 @@ export function Input() {
                 │
               </text>
               <text fg={Colors.blueGray} attributes={dimAttributes}>
-                model: {selectedModel()}
+                model: {selectedModel()?.id}
               </text>
               <text fg={Colors.blueGray} attributes={dimAttributes}>
                 │

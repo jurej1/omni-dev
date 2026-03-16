@@ -38,12 +38,9 @@ export function UserMessage(props: { message: UserMessageType }) {
 }
 
 function mimeColor(mimeType: string): { bg: string; fg: string } {
-  if (mimeType.startsWith("image/"))
-    return { bg: "#3D2B6B", fg: "#D2A8FF" };
-  if (mimeType.startsWith("video/"))
-    return { bg: "#3D1A1A", fg: "#FF7B72" };
-  if (mimeType.startsWith("audio/"))
-    return { bg: "#1A2E3D", fg: "#79C0FF" };
+  if (mimeType.startsWith("image/")) return { bg: "#3D2B6B", fg: "#D2A8FF" };
+  if (mimeType.startsWith("video/")) return { bg: "#3D1A1A", fg: "#FF7B72" };
+  if (mimeType.startsWith("audio/")) return { bg: "#1A2E3D", fg: "#79C0FF" };
   if (
     mimeType.startsWith("text/") ||
     mimeType === "application/json" ||
@@ -68,17 +65,12 @@ function FileTag(props: { fileName: string }) {
 
   return (
     <box flexDirection="row" width={"auto"} height={"auto"} gap={1}>
-      <box
-        backgroundColor={colors().bg}
-        paddingX={1}
-      >
+      <box backgroundColor={colors().bg} paddingX={1}>
         <text fg={colors().fg} attributes={bold}>
           {shortType()}
         </text>
       </box>
-      <text fg={theme.textMuted}>
-        {displayPath()}
-      </text>
+      <text fg={theme.textMuted}>{displayPath()}</text>
     </box>
   );
 }

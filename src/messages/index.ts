@@ -47,9 +47,9 @@ export const FunctionCallSchema = z.object({
 export const ReasoningSchema = z.object({
   type: z.literal("reasoning"),
   id: z.string(),
-  summary: z.array(ReasoningSummaryText$inboundSchema),
+  summary: z.array(ReasoningSummaryText$inboundSchema).optional(),
   status: MessageStatusSchema.optional(),
-  content: z.array(ReasoningTextContent$inboundSchema),
+  content: z.array(ReasoningTextContent$inboundSchema).optional(),
 });
 
 export const FunctionCallOutputSchema = z.object({

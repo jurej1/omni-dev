@@ -21,8 +21,7 @@ export const OpenRouterContext = createContext<OpenRouterContextValue>();
 
 export const OpenRouterProvider: ParentComponent = (props) => {
   const { addMessage, messages } = useMessages();
-  const { toolsForCurrentAgent, instructionsForCurrentAgent, sessionId } =
-    useSession();
+  const { toolsForCurrentAgent, instructionsForCurrentAgent } = useSession();
   const { selectedModel, reasoningEnabled, reasoningEffort } = useModel();
   const [isStreaming, setIsStreaming] = createSignal(false);
   const [usage, setUsage] = createSignal<OpenResponsesUsage | undefined>(
@@ -44,7 +43,7 @@ export const OpenRouterProvider: ParentComponent = (props) => {
 
     try {
       await OpenRouterClient.callModel({
-        model: selectedModel(),
+        model: selectedModel().id,
         data: messages(),
         callback: addMessage,
         onUsageData: setUsage,
@@ -52,7 +51,6 @@ export const OpenRouterProvider: ParentComponent = (props) => {
         agentInstructions: instructionsForCurrentAgent(),
         reasoningEnabled: reasoningEnabled(),
         reasoningEffort: reasoningEffort(),
-        sessionId: sessionId(),
       });
     } catch (error: unknown) {
       const errorMessage: Message = {
