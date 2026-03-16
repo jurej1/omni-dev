@@ -14,6 +14,17 @@ export const AVAILABLE_MODELS = [
 
 export type ModelId = (typeof AVAILABLE_MODELS)[number];
 
+export const REASONING_EFFORT_LEVELS = [
+  "xhigh",
+  "high",
+  "medium",
+  "low",
+  "minimal",
+  "none",
+] as const;
+
+export type ReasoningEffort = (typeof REASONING_EFFORT_LEVELS)[number];
+
 type ModelContextValue = {
   selectedModel: () => ModelId;
   setSelectedModel: (model: ModelId) => void;
@@ -24,6 +35,12 @@ type ModelContextValue = {
   filteredModels: () => ModelId[];
   reasoningEnabled: () => boolean;
   setReasoningEnabled: (v: boolean | ((prev: boolean) => boolean)) => void;
+  reasoningEffort: () => ReasoningEffort;
+  setReasoningEffort: (v: ReasoningEffort) => void;
+  effortPickerVisible: () => boolean;
+  setEffortPickerVisible: (v: boolean) => void;
+  selectedEffortIndex: () => number;
+  setSelectedEffortIndex: (v: number | ((prev: number) => number)) => void;
 };
 
 const ModelContext = createContext<ModelContextValue>();
@@ -35,6 +52,9 @@ export const ModelProvider: ParentComponent = (props) => {
   const [modelPickerVisible, setModelPickerVisible] = createSignal(false);
   const [selectedPickerIndex, setSelectedPickerIndex] = createSignal(0);
   const [reasoningEnabled, setReasoningEnabled] = createSignal(true);
+  const [reasoningEffort, setReasoningEffort] = createSignal<ReasoningEffort>("high");
+  const [effortPickerVisible, setEffortPickerVisible] = createSignal(false);
+  const [selectedEffortIndex, setSelectedEffortIndex] = createSignal(0);
 
   const filteredModels = createMemo((): ModelId[] =>
     modelPickerVisible() ? [...AVAILABLE_MODELS] : [],
@@ -52,6 +72,12 @@ export const ModelProvider: ParentComponent = (props) => {
         filteredModels,
         reasoningEnabled,
         setReasoningEnabled,
+        reasoningEffort,
+        setReasoningEffort,
+        effortPickerVisible,
+        setEffortPickerVisible,
+        selectedEffortIndex,
+        setSelectedEffortIndex,
       }}
     >
       {props.children}
