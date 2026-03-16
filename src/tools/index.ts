@@ -5,6 +5,7 @@ import { grepTool } from "./grep/grep";
 import { listTool } from "./ls/ls";
 import { readTool } from "./read/read";
 import { skillsTool } from "./skills/skills";
+import { taskTool } from "./task/task";
 import { getTodosTool, writeTodosTool } from "./todo/todo";
 import { webfetchTool } from "./webfetch/webfetch";
 import { websearchTool } from "./websearch/websearch";
@@ -23,6 +24,7 @@ export const tools = [
   skillsTool,
   writeTodosTool,
   getTodosTool,
+  taskTool,
 ];
 
 export {
@@ -79,4 +81,13 @@ export {
   type ReadInput,
   type ReadMetadata,
 } from "./read/read";
+export {
+  WriteTodosInputSchema,
+  WriteTodosOutputSchema,
+  GetTodosInputSchema,
+  GetTodosOutputSchema,
+  type WriteTodosInput,
+  type GetTodosInput,
+} from "./todo/todo";
+export { TaskInputSchema, type TaskInput } from "./task/task";
 export { ToolUtil } from "./parse";

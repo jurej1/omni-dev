@@ -127,7 +127,9 @@ export namespace OpenRouterClient {
       });
 
       for await (const item of result.getItemsStream()) {
-        await saveRawOutput(item);
+        if (item.status === "completed") {
+          await saveRawOutput(item);
+        }
 
         switch (item.type) {
           case "message":

@@ -22,7 +22,11 @@ export const WriteTodosOutputSchema = z.object({
   count: z.number().describe("Number of todos stored"),
 });
 
+export type WriteTodosInput = z.infer<typeof WriteTodosInputSchema>;
+
 export const GetTodosInputSchema = z.object({});
+
+export type GetTodosInput = z.infer<typeof GetTodosInputSchema>;
 
 export const GetTodosOutputSchema = z.object({
   todos: z.array(

@@ -10,6 +10,9 @@ import { GlobOutput } from "./GlobOutput";
 import { ListOutput } from "./ListOutput";
 import { WebsearchOutput } from "./WebsearchOutput";
 import { WebfetchOutput } from "./WebfetchOutput";
+import { TaskOutput } from "./TaskOutput";
+import { WriteTodosOutput } from "./WriteTodosOutput";
+import { GetTodosOutput } from "./GetTodosOutput";
 
 export function FunctionCallOutputItem(props: {
   message: FunctionCallOutputMessage;
@@ -53,6 +56,15 @@ export function FunctionCallOutputItem(props: {
       </Match>
       <Match when={toolName() === "webfetch"}>
         <WebfetchOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "Task"}>
+        <TaskOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "write_todos"}>
+        <WriteTodosOutput message={props.message} />
+      </Match>
+      <Match when={toolName() === "get_todos"}>
+        <GetTodosOutput message={props.message} />
       </Match>
     </Switch>
   );

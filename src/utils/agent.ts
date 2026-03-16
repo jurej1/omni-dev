@@ -2,6 +2,7 @@ import { tool } from "@openrouter/sdk";
 
 import PLAN_INSTRUCTIONS from "../prompts/plan.txt";
 import BUILD_INSTRUCTIONS from "../prompts/build.txt";
+import EXPLORE_INSTRUCTIONS from "../prompts/explore.txt";
 
 import { readTool } from "../tools/read/read";
 import { globTool } from "../tools/glob/glob";
@@ -66,5 +67,22 @@ export namespace Agent {
     "#34d399",
     "BUILD",
     "◆",
+  );
+
+  export const EXPLORE = AgentTool.define(
+    "explore",
+    "Searches and explores the codebase to find files, patterns, and relevant code.",
+    EXPLORE_INSTRUCTIONS,
+    [
+      readTool,
+      globTool,
+      grepTool,
+      listTool,
+      websearchTool,
+      webfetchTool,
+    ],
+    "#60a5fa",
+    "EXPLORE",
+    "◎",
   );
 }

@@ -11,15 +11,8 @@ import { FunctionCallOutputItem } from "./FunctionCallOutputItem";
 export function Messages() {
   const { messages } = useMessages();
 
-  let scroll: ScrollBoxRenderable;
-
   return (
-    <scrollbox
-      flexGrow={1}
-      ref={(r) => (scroll = r)}
-      stickyScroll={true}
-      stickyStart="bottom"
-    >
+    <scrollbox flexGrow={1} stickyScroll={true} stickyStart="bottom">
       <For each={messages()}>
         {(message) => {
           const component = createMemo(() => {

@@ -10,6 +10,9 @@ import { GlobCall } from "./GlobCall";
 import { ListCall } from "./ListCall";
 import { WebsearchCall } from "./WebsearchCall";
 import { WebfetchCall } from "./WebfetchCall";
+import { TaskCall } from "./TaskCall";
+import { WriteTodosCall } from "./WriteTodosCall";
+import { GetTodosCall } from "./GetTodosCall";
 
 export function FunctionCallItem(props: { message: FunctionCallMessage }) {
   return (
@@ -48,6 +51,15 @@ export function FunctionCallItem(props: { message: FunctionCallMessage }) {
       </Match>
       <Match when={props.message.name === "webfetch"}>
         <WebfetchCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "Task"}>
+        <TaskCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "write_todos"}>
+        <WriteTodosCall message={props.message} />
+      </Match>
+      <Match when={props.message.name === "get_todos"}>
+        <GetTodosCall message={props.message} />
       </Match>
     </Switch>
   );
