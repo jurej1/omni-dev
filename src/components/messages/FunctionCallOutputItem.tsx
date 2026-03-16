@@ -26,7 +26,7 @@ export function FunctionCallOutputItem(props: {
       fallback={
         <ToolOutputBox
           icon="⚙"
-          summary={`[output] ${props.message.output.slice(0, 80)}`}
+          summary={`[output] ${props.message.output}`}
         />
       }
     >

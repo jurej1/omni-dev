@@ -1,6 +1,7 @@
 import { Switch, Match } from "solid-js";
 import type { FunctionCallMessage } from "../../messages";
 import { ToolCallBox } from "./ToolCallBox";
+import { extractArgHint } from "./shared";
 import { ReadCall } from "./ReadCall";
 import { BashCall } from "./BashCall";
 import { EditCall } from "./EditCall";
@@ -20,7 +21,7 @@ export function FunctionCallItem(props: { message: FunctionCallMessage }) {
       fallback={
         <ToolCallBox
           icon="⚙"
-          label={`${props.message.name}(${props.message.arguments})`}
+          label={extractArgHint(props.message.name, props.message.arguments)}
           status={props.message.status}
         />
       }

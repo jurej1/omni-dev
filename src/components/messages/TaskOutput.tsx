@@ -9,10 +9,10 @@ export function TaskOutput(props: { message: FunctionCallOutputMessage }) {
         task_id?: string;
         result?: string;
       };
-      const preview = parsed.result?.slice(0, 80) ?? "";
+      const preview = parsed.result ?? "";
       return preview || "done";
     } catch {
-      return props.message.output.slice(0, 80);
+      return props.message.output;
     }
   });
   return <ToolOutputBox icon="TASK" summary={summary()} />;

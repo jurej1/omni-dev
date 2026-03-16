@@ -52,11 +52,22 @@ export function detectLanguage(output: string): string {
   return "text";
 }
 
+export function extractArgHint(toolName: string, argsJson: string): string {
+  try {
+    const args = JSON.parse(argsJson) as Record<string, unknown>;
+    const firstVal = Object.values(args)[0];
+    const hint = typeof firstVal === "string" ? firstVal : argsJson;
+    return `${toolName}(${hint})`;
+  } catch {
+    return toolName;
+  }
+}
+
 export function formatJson(jsonStr: string): string {
   try {
     const parsed = JSON.parse(jsonStr);
     return JSON.stringify(parsed, null, 2);
   } catch {
-    return jsonStr.slice(0, 200) + "...";
+    return jsonStr;
   }
 }
