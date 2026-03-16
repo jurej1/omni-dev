@@ -42,6 +42,7 @@ export namespace OpenRouterClient {
     onUsageData,
     tools: overrideTools,
     agentInstructions,
+    reasoningEnabled,
   }: {
     model: string;
     data: Message[];
@@ -49,6 +50,7 @@ export namespace OpenRouterClient {
     onUsageData: (data: OpenResponsesUsage) => void;
     tools?: Tool[];
     agentInstructions?: string;
+    reasoningEnabled?: boolean;
   }) {
     logger.log(`callModel: model=${model}  inputLen=${data.length}`);
 
@@ -59,6 +61,7 @@ export namespace OpenRouterClient {
         model,
         instructions: agentInstructions,
         parallelToolCalls: true,
+        ...(reasoningEnabled ? { reasoning: { enabled: true } } : {}),
         input: [
           {
             role: "system",

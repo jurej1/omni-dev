@@ -116,6 +116,8 @@ export function Input() {
     selectedPickerIndex,
     setSelectedPickerIndex,
     filteredModels,
+    reasoningEnabled,
+    setReasoningEnabled,
   } = useModel();
 
   const handleContentChange = () => {
@@ -219,6 +221,12 @@ export function Input() {
         return;
       }
 
+      return;
+    }
+
+    if (e.ctrl && name === "r") {
+      e.preventDefault();
+      setReasoningEnabled((v) => !v);
       return;
     }
 
@@ -442,14 +450,17 @@ export function Input() {
                 │
               </text>
               <text fg={Colors.blueGray} attributes={dimAttributes}>
-                tab to switch · @ for files · / for commands · enter to send
+                model: {selectedModel()}
               </text>
               <text fg={Colors.blueGray} attributes={dimAttributes}>
                 │
               </text>
-              <text fg={Colors.blueGray} attributes={dimAttributes}>
-                model: {selectedModel()}
-              </text>
+
+              <Show when={reasoningEnabled()}>
+                <text fg={Colors.streamingColor} attributes={boldAttributes}>
+                  🧠
+                </text>
+              </Show>
             </box>
           </>
         }

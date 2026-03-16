@@ -22,6 +22,8 @@ type ModelContextValue = {
   selectedPickerIndex: () => number;
   setSelectedPickerIndex: (v: number | ((prev: number) => number)) => void;
   filteredModels: () => ModelId[];
+  reasoningEnabled: () => boolean;
+  setReasoningEnabled: (v: boolean | ((prev: boolean) => boolean)) => void;
 };
 
 const ModelContext = createContext<ModelContextValue>();
@@ -32,6 +34,7 @@ export const ModelProvider: ParentComponent = (props) => {
   );
   const [modelPickerVisible, setModelPickerVisible] = createSignal(false);
   const [selectedPickerIndex, setSelectedPickerIndex] = createSignal(0);
+  const [reasoningEnabled, setReasoningEnabled] = createSignal(true);
 
   const filteredModels = createMemo((): ModelId[] =>
     modelPickerVisible() ? [...AVAILABLE_MODELS] : [],
@@ -47,6 +50,8 @@ export const ModelProvider: ParentComponent = (props) => {
         selectedPickerIndex,
         setSelectedPickerIndex,
         filteredModels,
+        reasoningEnabled,
+        setReasoningEnabled,
       }}
     >
       {props.children}
