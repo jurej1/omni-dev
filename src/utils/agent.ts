@@ -3,6 +3,10 @@ import { tool } from "@openrouter/sdk";
 import PLAN_INSTRUCTIONS from "../prompts/plan.txt";
 import BUILD_INSTRUCTIONS from "../prompts/build.txt";
 import EXPLORE_INSTRUCTIONS from "../prompts/explore.txt";
+import GENERAL_INSTRUCTIONS from "../prompts/general.txt";
+import COMPACTION_INSTRUCTIONS from "../prompts/compaction.txt";
+import TITLE_INSTRUCTIONS from "../prompts/title.txt";
+import SUMMARY_INSTRUCTIONS from "../prompts/summary.txt";
 
 import { readTool } from "../tools/read/read";
 import { globTool } from "../tools/glob/glob";
@@ -24,6 +28,7 @@ export namespace AgentTool {
     color: string;
     label: string;
     sigil: string;
+    hidden?: boolean;
   };
 
   export function define(
@@ -34,8 +39,9 @@ export namespace AgentTool {
     color: string,
     label: string,
     sigil: string,
+    hidden?: boolean,
   ): Definition {
-    return { name, description, instructions, toolsList, color, label, sigil };
+    return { name, description, instructions, toolsList, color, label, sigil, hidden };
   }
 }
 
@@ -84,5 +90,48 @@ export namespace Agent {
     "#60a5fa",
     "EXPLORE",
     "◎",
+  );
+
+  export const GENERAL = AgentTool.define(
+    "general",
+    "General-purpose agent for researching complex questions and executing multi-step tasks. Use this agent to execute multiple units of work in parallel.",
+    GENERAL_INSTRUCTIONS,
+    tools,
+    "#f59e0b",
+    "GENERAL",
+    "◉",
+  );
+
+  export const COMPACTION = AgentTool.define(
+    "compaction",
+    "Compresses conversation history to reduce token usage while preserving essential context.",
+    COMPACTION_INSTRUCTIONS,
+    [],
+    "#6b7280",
+    "COMPACT",
+    "⊙",
+    true,
+  );
+
+  export const TITLE = AgentTool.define(
+    "title",
+    "Generates a short descriptive title for a conversation or task.",
+    TITLE_INSTRUCTIONS,
+    [],
+    "#6b7280",
+    "TITLE",
+    "⊤",
+    true,
+  );
+
+  export const SUMMARY = AgentTool.define(
+    "summary",
+    "Produces a concise summary of a conversation or set of results.",
+    SUMMARY_INSTRUCTIONS,
+    [],
+    "#6b7280",
+    "SUMMARY",
+    "∑",
+    true,
   );
 }

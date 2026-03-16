@@ -6,12 +6,20 @@ import { SystemPrompt } from "../../utils/system";
 import { FileScanner } from "../../utils/file-scanner";
 
 function getAgents(): Record<string, AgentTool.Definition> {
-  return { plan: Agent.PLAN, build: Agent.BUILD, explore: Agent.EXPLORE };
+  return {
+    plan: Agent.PLAN,
+    build: Agent.BUILD,
+    explore: Agent.EXPLORE,
+    general: Agent.GENERAL,
+    compaction: Agent.COMPACTION,
+    title: Agent.TITLE,
+    summary: Agent.SUMMARY,
+  };
 }
 
 const DESCRIPTION = DESCRIPTION_TEMPLATE.replace(
   "{agents}",
-  '- "plan": Analyzes the request and produces a step-by-step implementation plan before any code is written.\n- "build": Implements the plan by writing and modifying code in the codebase.\n- "explore": Searches and explores the codebase to find files, patterns, and relevant code.',
+  '- "plan": Analyzes the request and produces a step-by-step implementation plan before any code is written.\n- "build": Implements the plan by writing and modifying code in the codebase.\n- "explore": Searches and explores the codebase to find files, patterns, and relevant code.\n- "general": General-purpose agent for researching complex questions and executing multi-step tasks.\n- "compaction": Compresses conversation history to reduce token usage (hidden).\n- "title": Generates a short descriptive title for a conversation (hidden).\n- "summary": Produces a concise summary of a conversation or results (hidden).',
 );
 
 const openrouter = new OpenRouter({
@@ -26,7 +34,7 @@ export const TaskInputSchema = z.object({
   subagent_type: z
     .string()
     .describe(
-      'The type of agent to use (e.g. "plan", "build", "explore" -> it has to be one of these three values)',
+      'The type of agent to use. Available: "plan", "build", "explore", "general", "compaction", "title", "summary"',
     ),
   task_id: z
     .string()
