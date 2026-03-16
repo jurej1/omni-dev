@@ -1,6 +1,7 @@
 import { OpenRouter, tool } from "@openrouter/sdk";
 import { tools } from "../tools";
 import { MessageStatus } from "../messages";
+import type { ReasoningEffort } from "../context/model";
 import { Message } from "../context/messages";
 import { logger } from "../logger";
 import { writeFile, mkdir } from "fs/promises";
@@ -43,6 +44,7 @@ export namespace OpenRouterClient {
     tools: overrideTools,
     agentInstructions,
     reasoningEnabled,
+    reasoningEffort,
     sessionId,
   }: {
     model: string;
@@ -52,6 +54,7 @@ export namespace OpenRouterClient {
     tools?: Tool[];
     agentInstructions?: string;
     reasoningEnabled?: boolean;
+    reasoningEffort?: ReasoningEffort;
     sessionId: string;
   }) {
     logger.log(`callModel: model=${model}  inputLen=${data.length}`);
@@ -63,7 +66,9 @@ export namespace OpenRouterClient {
         model,
         instructions: agentInstructions,
         parallelToolCalls: true,
-        ...(reasoningEnabled ? { reasoning: { enabled: true } } : {}),
+        ...(reasoningEnabled
+          ? { reasoning: { enabled: true, effort: reasoningEffort ?? "high" } }
+          : {}),
         input: [
           {
             role: "system",
