@@ -5,11 +5,13 @@ import {
   createMemo,
   createResource,
   createEffect,
+  onCleanup,
 } from "solid-js";
 import type { ParentComponent } from "solid-js";
 import { OpenRouterClient } from "../openrouter/openrouter";
 import { logger } from "../logger";
 import { Model } from "@openrouter/sdk/esm/models";
+import { PreferencesUtil } from "../storage/preferences";
 
 export const REASONING_EFFORT_LEVELS = [
   "xhigh",
@@ -64,7 +66,16 @@ export const ModelProvider: ParentComponent = (props) => {
   const [scrollOffset, setScrollOffset] = createSignal(0);
   const [reasoningEnabled, setReasoningEnabled] = createSignal(true);
   const [reasoningEffort, setReasoningEffort] =
-    createSignal<ReasoningEffort>("high");
+    createSignal<ReasoningEffort>("medium");
+
+  PreferencesUtil.getReasoningEffort().then((saved) => {
+    if (
+      saved &&
+      (REASONING_EFFORT_LEVELS as readonly string[]).includes(saved)
+    ) {
+      setReasoningEffort(saved as ReasoningEffort);
+    }
+  });
   const [effortPickerVisible, setEffortPickerVisible] = createSignal(false);
   const [selectedEffortIndex, setSelectedEffortIndex] = createSignal(0);
 
@@ -81,8 +92,21 @@ export const ModelProvider: ParentComponent = (props) => {
   createEffect(() => {
     const models = modelsResource();
     if (models && models.length > 0 && selectedModel() === undefined) {
-      setSelectedModel(models[0]);
+      PreferencesUtil.getSelectedModelId().then((savedId) => {
+        const match = savedId
+          ? models.find((m) => m.id === savedId)
+          : undefined;
+        setSelectedModel(match ?? models[0]);
+      });
     }
+  });
+
+  onCleanup(() => {
+    const model = selectedModel();
+    if (model) {
+      PreferencesUtil.saveSelectedModelId(model.id);
+    }
+    PreferencesUtil.saveReasoningEffort(reasoningEffort());
   });
 
   createEffect(() => {
