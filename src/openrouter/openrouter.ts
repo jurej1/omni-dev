@@ -61,6 +61,16 @@ export namespace OpenRouterClient {
     return result.getText();
   }
 
+  export async function compact(messages: Message[]): Promise<string> {
+    const result = openrouter.callModel({
+      model: "openrouter/free",
+      instructions: Agent.COMPACTION.instructions,
+      input: mapMessages(messages),
+    });
+
+    return result.getText();
+  }
+
   export async function listModels(): Promise<Model[]> {
     const response = await openrouter.models.list();
     return response.data.filter(isChatModel);
@@ -106,50 +116,7 @@ export namespace OpenRouterClient {
             role: "system",
             content: `${process.cwd()} is the current working directory. And this are the files inside of it ${FileScanner.cached()}`,
           },
-          ...data
-            .map((msg) => {
-              switch (msg.type) {
-                case "message": {
-                  if (msg.role === "user") {
-                    return { role: msg.role, content: msg.content };
-                  } else {
-                    return {
-                      role: msg.role,
-                      content: msg.content
-                        .filter((m) => m.type === "output_text")
-                        .map((m) => m.text)
-                        .join(""),
-                    };
-                  }
-                }
-                case "function_call": {
-                  return {
-                    type: "function_call",
-                    callId: msg.callId,
-                    name: msg.name,
-                    id: msg.id,
-                    arguments: msg.arguments,
-                  } as OpenResponsesFunctionToolCall;
-                }
-                case "function_call_output": {
-                  return {
-                    type: "function_call_output",
-                    callId: msg.callId,
-                    output: msg.output,
-                  } as OpenResponsesFunctionCallOutput;
-                }
-                case "reasoning":
-                  return {
-                    id: msg.id,
-                    summary: msg.summary,
-                    type: msg.type,
-                    content: msg.content,
-                  } as OpenResponsesReasoning;
-                default:
-                  return null;
-              }
-            })
-            .filter((msg) => msg !== null),
+          ...mapMessages(data),
         ],
         tools: toolsList,
       });
@@ -210,5 +177,52 @@ export namespace OpenRouterClient {
       logger.error("callModel error:", error);
       throw error;
     }
+  }
+
+  function mapMessages(messages: Message[]) {
+    return messages
+      .map((msg) => {
+        switch (msg.type) {
+          case "message": {
+            if (msg.role === "user") {
+              return { role: msg.role, content: msg.content };
+            } else {
+              return {
+                role: msg.role,
+                content: msg.content
+                  .filter((m) => m.type === "output_text")
+                  .map((m) => m.text)
+                  .join(""),
+              };
+            }
+          }
+          case "function_call": {
+            return {
+              type: "function_call",
+              callId: msg.callId,
+              name: msg.name,
+              id: msg.id,
+              arguments: msg.arguments,
+            } as OpenResponsesFunctionToolCall;
+          }
+          case "function_call_output": {
+            return {
+              type: "function_call_output",
+              callId: msg.callId,
+              output: msg.output,
+            } as OpenResponsesFunctionCallOutput;
+          }
+          case "reasoning":
+            return {
+              id: msg.id,
+              summary: msg.summary,
+              type: msg.type,
+              content: msg.content,
+            } as OpenResponsesReasoning;
+          default:
+            return null;
+        }
+      })
+      .filter((msg) => msg !== null);
   }
 }
