@@ -7,6 +7,8 @@ import {
 import type { ParentComponent } from "solid-js";
 import { useMessages } from "./messages";
 import { useModel } from "./model";
+import { TodoUtil } from "../storage/todo";
+import { SessionUtil } from "../utils/session";
 
 export type CommandDefinition = {
   name: string;
@@ -36,7 +38,10 @@ export const CommandsProvider: ParentComponent = (props) => {
     {
       name: "clear",
       description: "Clear conversation history",
-      action: clearMessages,
+      action: () => {
+        clearMessages();
+        TodoUtil.write(SessionUtil.id, []);
+      },
     },
     {
       name: "models",

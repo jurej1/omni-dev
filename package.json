@@ -19,6 +19,7 @@
     "@openrouter/sdk": "^0.9.11",
     "@opentui/core": "^0.1.87",
     "@opentui/solid": "^0.1.87",
+    "drizzle-orm": "^0.45.1",
     "fs": "^0.0.1-security",
     "readline": "^1.3.0",
     "solid-js": "^1.9.11",

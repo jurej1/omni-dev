@@ -9,9 +9,8 @@ import { grepTool } from "../tools/grep/grep";
 import { listTool } from "../tools/ls/ls";
 import { websearchTool } from "../tools/websearch/websearch";
 import { webfetchTool } from "../tools/webfetch/webfetch";
-import { bashTool } from "../tools/bash/bash";
-import { editTool } from "../tools/edit/edit";
-import { writeTool } from "../tools/write/write";
+import { getTodosTool, writeTodosTool } from "../tools/todo/todo";
+import { tools } from "../tools";
 
 type Tool = ReturnType<typeof tool>;
 
@@ -44,7 +43,16 @@ export namespace Agent {
     "plan",
     "Analyzes the request and produces a step-by-step implementation plan before any code is written.",
     PLAN_INSTRUCTIONS,
-    [readTool, globTool, grepTool, listTool, websearchTool, webfetchTool],
+    [
+      readTool,
+      globTool,
+      grepTool,
+      listTool,
+      websearchTool,
+      webfetchTool,
+      writeTodosTool,
+      getTodosTool,
+    ],
     "#a78bfa",
     "PLAN",
     "◈",
@@ -54,17 +62,7 @@ export namespace Agent {
     "build",
     "Implements the plan by writing and modifying code in the codebase.",
     BUILD_INSTRUCTIONS,
-    [
-      readTool,
-      globTool,
-      grepTool,
-      listTool,
-      websearchTool,
-      webfetchTool,
-      bashTool,
-      editTool,
-      writeTool,
-    ],
+    tools,
     "#34d399",
     "BUILD",
     "◆",

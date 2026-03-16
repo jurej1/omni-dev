@@ -8,6 +8,7 @@ import {
 
 import { tool } from "@openrouter/sdk";
 import { Agent, AgentTool } from "../utils/agent";
+import { SessionUtil } from "../utils/session";
 
 type Tool = ReturnType<typeof tool>;
 
@@ -23,6 +24,7 @@ type SessionContextValue = {
   currentAgentName: () => string;
   toolsForCurrentAgent: () => Tool[];
   instructionsForCurrentAgent: () => string;
+  sessionId: () => string;
 
   // Actions
   switchToAgent: (agentName: string) => void;
@@ -31,6 +33,7 @@ type SessionContextValue = {
 export const SessionContext = createContext<SessionContextValue>();
 
 export const SessionProvider: ParentComponent = (props) => {
+  const [sessionId] = createSignal(SessionUtil.id);
   const [agent, setAgent] = createSignal<AgentTool.Definition>(Agent.BUILD);
 
   const currentAgentName = createMemo(() => agent().name);
@@ -62,6 +65,7 @@ export const SessionProvider: ParentComponent = (props) => {
         currentAgentName,
         toolsForCurrentAgent,
         instructionsForCurrentAgent,
+        sessionId,
         switchToAgent,
       }}
     >

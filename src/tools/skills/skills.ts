@@ -1,6 +1,6 @@
 import { tool } from "@openrouter/sdk";
 import z from "zod";
-import { tools } from "../index";
+import { tools } from "..";
 
 export const skillsTool = tool({
   name: "list_skills",
@@ -10,6 +10,6 @@ export const skillsTool = tool({
     tools: z.array(z.any()),
   }),
   execute: async () => {
-    return { tools };
+    return { tools: tools };
   },
 });

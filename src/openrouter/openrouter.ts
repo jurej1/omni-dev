@@ -43,6 +43,7 @@ export namespace OpenRouterClient {
     tools: overrideTools,
     agentInstructions,
     reasoningEnabled,
+    sessionId,
   }: {
     model: string;
     data: Message[];
@@ -51,6 +52,7 @@ export namespace OpenRouterClient {
     tools?: Tool[];
     agentInstructions?: string;
     reasoningEnabled?: boolean;
+    sessionId: string;
   }) {
     logger.log(`callModel: model=${model}  inputLen=${data.length}`);
 

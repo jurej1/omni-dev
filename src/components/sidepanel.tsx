@@ -3,6 +3,8 @@ import { useOpenRouter } from "../context/openrouter";
 import { createTextAttributes } from "@opentui/core";
 import { Colors } from "../utils/colors";
 import { useModel } from "../context/model";
+import { useSession } from "../context/session";
+import { Todos } from "./todos";
 
 const bold = createTextAttributes({ bold: true });
 const dim = createTextAttributes({ dim: true });
@@ -20,9 +22,11 @@ const STATUS_FRAMES = ["◆", "◇"];
 
 function StatusPulse() {
   const [frame, setFrame] = createSignal(0);
+
   const interval = setInterval(() => {
     setFrame((f) => (f + 1) % STATUS_FRAMES.length);
   }, 600);
+
   onCleanup(() => clearInterval(interval));
 
   return (
@@ -58,6 +62,7 @@ export function Sidepanel() {
   const outputTokens = () => usage()?.outputTokens ?? 0;
 
   const { selectedModel } = useModel();
+  const { sessionId } = useSession();
 
   return (
     <box padding={1} flexDirection="column" height="100%" width="100%" gap={1}>
@@ -67,6 +72,14 @@ export function Sidepanel() {
         <text fg={theme.success} attributes={bold}>
           OMNI
         </text>
+      </box>
+
+      {/* Session ID */}
+      <box flexDirection="column" width="100%">
+        <text fg={theme.textMuted} attributes={dim}>
+          SESSION
+        </text>
+        <text fg={theme.text}>{sessionId()}</text>
       </box>
 
       {/* Status */}
@@ -111,6 +124,9 @@ export function Sidepanel() {
       <text fg={theme.textMuted} attributes={dim}>
         {selectedModel()}
       </text>
+
+      {/* Todos */}
+      <Todos />
     </box>
   );
 }

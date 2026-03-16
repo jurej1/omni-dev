@@ -5,6 +5,7 @@ import { grepTool } from "./grep/grep";
 import { listTool } from "./ls/ls";
 import { readTool } from "./read/read";
 import { skillsTool } from "./skills/skills";
+import { getTodosTool, writeTodosTool } from "./todo/todo";
 import { webfetchTool } from "./webfetch/webfetch";
 import { websearchTool } from "./websearch/websearch";
 import { writeTool } from "./write/write";
@@ -20,6 +21,8 @@ export const tools = [
   grepTool,
   globTool,
   skillsTool,
+  writeTodosTool,
+  getTodosTool,
 ];
 
 export {
