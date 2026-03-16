@@ -1,5 +1,5 @@
 import type { JSXElement } from "solid-js";
-import { theme } from "./shared";
+import { theme, dim } from "./shared";
 
 export function ToolOutputBox(props: {
   icon: string;
@@ -15,9 +15,9 @@ export function ToolOutputBox(props: {
       marginTop={1}
       gap={1}
       backgroundColor={theme.backgroundPanel}
-      borderColor={theme.background}
+      borderColor={theme.accentDimGray}
     >
-      <text paddingLeft={3} fg={theme.textMuted}>
+      <text paddingLeft={3} fg={theme.textMuted} attributes={dim}>
         {props.icon} {props.summary}
       </text>
       {props.children}

@@ -16,9 +16,11 @@ export function WebsearchCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="⌖"
+      name="WEBSEARCH"
       label={args().query ?? ""}
       detail={detail()}
       status={props.message.status}
+      type="network"
     />
   );
 }

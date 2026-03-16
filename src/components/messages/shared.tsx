@@ -15,6 +15,9 @@ export const syntaxStyle = SyntaxStyle.fromStyles({
 });
 
 export const bold = createTextAttributes({ bold: true });
+export const dim = createTextAttributes({ dim: true });
+export const italic = createTextAttributes({ italic: true });
+export const dimItalic = createTextAttributes({ dim: true, italic: true });
 
 export const theme = {
   text: "#E6EDF3",
@@ -24,6 +27,24 @@ export const theme = {
   backgroundMenu: "#161B22",
   error: "#FF7B72",
   warning: "#D29922",
+  accentUser: "#3FB950",
+  accentDimGray: "#6e7681",
+  accentBlue: "#79C0FF",
+  accentGreen: "#7EE787",
+  accentPurple: "#D2A8FF",
+  accentOrange: "#F0883E",
+  accentAmber: "#D29922",
+};
+
+export type ToolCategory = "filesystem" | "shell" | "network" | "ai" | "meta" | "unknown";
+
+export const toolCategoryColor: Record<ToolCategory, string> = {
+  filesystem: "#79C0FF",
+  shell: "#7EE787",
+  network: "#D2A8FF",
+  ai: "#F0883E",
+  meta: "#D29922",
+  unknown: "#8B949E",
 };
 
 export function normalizePath(filepath: string): string {

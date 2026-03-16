@@ -23,6 +23,7 @@ export function FunctionCallItem(props: { message: FunctionCallMessage }) {
           icon="⚙"
           label={extractArgHint(props.message.name, props.message.arguments)}
           status={props.message.status}
+          type="unknown"
         />
       }
     >

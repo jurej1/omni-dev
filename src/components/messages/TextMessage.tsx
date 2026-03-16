@@ -14,18 +14,24 @@ export function TextMessage(props: { message: MessageMessage }) {
     <Show when={text().trim()}>
       <box
         id={"text-" + props.message.id}
-        paddingLeft={3}
+        border={["left"]}
+        paddingLeft={2}
+        paddingTop={1}
+        paddingBottom={1}
         marginTop={1}
         flexShrink={0}
+        borderColor={theme.accentDimGray}
       >
-        <code
-          drawUnstyledText={false}
-          filetype="markdown"
-          syntaxStyle={syntaxStyle}
-          content={text()}
-          fg={theme.text}
-          streaming={true}
-        />
+        <box paddingLeft={3}>
+          <code
+            drawUnstyledText={false}
+            filetype="markdown"
+            syntaxStyle={syntaxStyle}
+            content={text()}
+            fg={theme.text}
+            streaming={true}
+          />
+        </box>
       </box>
     </Show>
   );

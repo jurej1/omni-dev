@@ -10,8 +10,10 @@ export function WriteCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="+"
+      name="WRITE"
       label={args().filePath ?? ""}
       status={props.message.status}
+      type="filesystem"
     />
   );
 }

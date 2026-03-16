@@ -10,8 +10,10 @@ export function BashCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="$"
+      name="BASH"
       label={args().command ?? ""}
       status={props.message.status}
+      type="shell"
     />
   );
 }

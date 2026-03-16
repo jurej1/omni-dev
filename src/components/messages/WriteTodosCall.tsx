@@ -14,9 +14,11 @@ export function WriteTodosCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="✓"
-      label="write todos"
+      name="TODOS"
+      label="write"
       detail={detail()}
       status={props.message.status}
+      type="meta"
     />
   );
 }

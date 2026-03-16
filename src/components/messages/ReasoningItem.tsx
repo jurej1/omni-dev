@@ -1,15 +1,14 @@
 import { createMemo } from "solid-js";
 import type { ReasoningMessage } from "../../messages";
-import { theme } from "./shared";
+import { theme, dimItalic } from "./shared";
 
 export function ReasoningItem(props: { message: ReasoningMessage }) {
-  const content = createMemo(() => {
-    const text = props.message.summary
+  const content = createMemo(() =>
+    props.message.summary
       .filter((s) => s.type === "summary_text")
       .map((s) => (s as { type: "summary_text"; text: string }).text)
-      .join("");
-    return `[thinking] ${text}`;
-  });
+      .join(""),
+  );
 
   return (
     <box
@@ -20,10 +19,10 @@ export function ReasoningItem(props: { message: ReasoningMessage }) {
       marginTop={1}
       gap={1}
       backgroundColor={theme.backgroundMenu}
-      borderColor={theme.background}
+      borderColor={theme.accentAmber}
     >
-      <text paddingLeft={3} fg={theme.textMuted}>
-        🤔 {content()}
+      <text paddingLeft={3} fg={theme.accentAmber} attributes={dimItalic}>
+        ⟳ {content()}
       </text>
     </box>
   );

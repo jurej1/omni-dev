@@ -34,7 +34,7 @@ function AppShell() {
       height={"100%"}
       width={"100%"}
       backgroundColor={Colors.primary}
-      paddingLeft={2}
+      paddingX={2}
       gap={2}
       margin={0}
     >

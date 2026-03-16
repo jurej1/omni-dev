@@ -13,9 +13,11 @@ export function WebfetchCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="↗"
+      name="WEBFETCH"
       label={args().url ?? ""}
       detail={detail()}
       status={props.message.status}
+      type="network"
     />
   );
 }

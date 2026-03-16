@@ -55,19 +55,16 @@ PROCESS FOR EACH FILE CHANGE:
 
 OUTPUT FORMAT
 
-After completing all tool calls, return a brief summary:
-
-IMPLEMENTATION SUMMARY
-Short description of what was implemented.
+After completing all tool calls, return a brief summary. Be concise — lead with the outcome, skip filler. No "summary:" label, just jump in.
 
 CHANGES MADE
 File: path/to/file — description of change
 
 NOTES
-Important implementation details or assumptions.
+Important implementation details or assumptions (omit if none).
 
 POTENTIAL FOLLOW UPS
-Optional improvements or refactors.
+Optional improvements or refactors (omit if none).
 
 Remember:
 - Actually write files using tools, do not only describe changes in text.

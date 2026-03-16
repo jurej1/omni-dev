@@ -1,6 +1,6 @@
 import { For, createMemo, Show } from "solid-js";
 import { useMessages } from "../../context/messages";
-import { ScrollBoxRenderable } from "@opentui/core";
+
 import { Dynamic } from "@opentui/solid";
 import { TextMessage } from "./TextMessage";
 import { UserMessage } from "./UserMessage";

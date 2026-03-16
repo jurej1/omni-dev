@@ -11,9 +11,11 @@ export function EditCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="✎"
+      name="EDIT"
       label={args().filePath ?? ""}
       detail={detail()}
       status={props.message.status}
+      type="filesystem"
     />
   );
 }

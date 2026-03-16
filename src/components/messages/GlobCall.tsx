@@ -11,9 +11,11 @@ export function GlobCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="*"
+      name="GLOB"
       label={args().pattern ?? ""}
       detail={detail()}
       status={props.message.status}
+      type="filesystem"
     />
   );
 }

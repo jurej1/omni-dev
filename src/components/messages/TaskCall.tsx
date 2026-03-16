@@ -9,10 +9,12 @@ export function TaskCall(props: { message: FunctionCallMessage }) {
   );
   return (
     <ToolCallBox
-      icon="TASK"
+      icon="◈"
+      name="TASK"
       label={args().description ?? args().subagent_type ?? ""}
       detail={args().subagent_type}
       status={props.message.status}
+      type="ai"
     />
   );
 }

@@ -11,9 +11,11 @@ export function ReadCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="→"
+      name="READ"
       label={args().filePath ?? ""}
       detail={detail()}
       status={props.message.status}
+      type="filesystem"
     />
   );
 }

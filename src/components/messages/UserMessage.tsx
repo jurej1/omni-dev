@@ -6,17 +6,17 @@ export function UserMessage(props: { message: UserMessageType }) {
   return (
     <box
       id={"user-" + (props.message as any).id}
-      border={["right"]}
+      border={["left"]}
       paddingX={2}
       paddingY={1}
       marginTop={1}
       flexShrink={0}
       backgroundColor={theme.backgroundPanel}
-      borderColor="#58A6FF"
+      borderColor={theme.accentUser}
       gap={1}
     >
-      <text fg="#79C0FF" attributes={bold}>
-        👤 You:
+      <text fg={theme.accentUser} attributes={bold}>
+        ▶ You
       </text>
       <Show when={props.message.content.trim()}>
         <code

@@ -11,8 +11,10 @@ export function ListCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="≡"
+      name="LIST"
       label={args().path ?? cwd}
       status={props.message.status}
+      type="filesystem"
     />
   );
 }

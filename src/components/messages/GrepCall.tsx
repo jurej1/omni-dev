@@ -16,9 +16,11 @@ export function GrepCall(props: { message: FunctionCallMessage }) {
   return (
     <ToolCallBox
       icon="⌕"
+      name="GREP"
       label={args().pattern ?? ""}
       detail={detail()}
       status={props.message.status}
+      type="filesystem"
     />
   );
 }
