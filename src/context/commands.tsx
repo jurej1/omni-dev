@@ -32,7 +32,7 @@ const CommandsContext = createContext<CommandsContextValue>();
 
 export const CommandsProvider: ParentComponent = (props) => {
   const { clearMessages } = useMessages();
-  const { setModelPickerVisible, setSelectedPickerIndex } = useModel();
+  const { setModelPickerVisible, setSelectedPickerIndex, setEffortPickerVisible, setSelectedEffortIndex } = useModel();
 
   const COMMANDS: CommandDefinition[] = [
     {
@@ -49,6 +49,14 @@ export const CommandsProvider: ParentComponent = (props) => {
       action: () => {
         setSelectedPickerIndex(0);
         setModelPickerVisible(true);
+      },
+    },
+    {
+      name: "effort",
+      description: "Set reasoning effort level",
+      action: () => {
+        setSelectedEffortIndex(0);
+        setEffortPickerVisible(true);
       },
     },
   ];
