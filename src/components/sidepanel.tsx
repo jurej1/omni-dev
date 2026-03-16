@@ -53,9 +53,8 @@ function StatRow(props: {
   );
 }
 
-
 export function Sidepanel() {
-  const { usage, isStreaming } = useOpenRouter();
+  const { usage, isStreaming, sessionTitle } = useOpenRouter();
   const [cwd] = createSignal(process.cwd().split("/").slice(-2).join("/"));
 
   const totalTokens = () => usage()?.totalTokens ?? 0;
@@ -92,6 +91,13 @@ export function Sidepanel() {
           OMNI
         </text>
       </box>
+
+      {/* Session Title */}
+      <Show when={sessionTitle()}>
+        <text fg={theme.accent} attributes={bold}>
+          {sessionTitle()}
+        </text>
+      </Show>
 
       {/* Session ID */}
       <box flexDirection="column" width="100%">
@@ -145,9 +151,7 @@ export function Sidepanel() {
             <text fg={theme.textMuted} attributes={dim}>
               ctx
             </text>
-            <text fg={theme.text}>
-              {contextPct()!.toFixed(0)}%
-            </text>
+            <text fg={theme.text}>{contextPct()!.toFixed(0)}%</text>
           </box>
         </Show>
       </box>

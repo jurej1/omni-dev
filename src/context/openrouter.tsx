@@ -15,6 +15,8 @@ type OpenRouterContextValue = {
   callModel: (message: string, files: string[]) => Promise<void>;
   isStreaming: () => boolean;
   usage: () => OpenResponsesUsage | undefined;
+  sessionTitle: () => string;
+  clearSessionTitle: () => void;
 };
 
 export const OpenRouterContext = createContext<OpenRouterContextValue>();
@@ -25,6 +27,9 @@ export const OpenRouterProvider: ParentComponent = (props) => {
   const { selectedModel, reasoningEnabled, reasoningEffort } = useModel();
   const [isStreaming, setIsStreaming] = createSignal(false);
   const [usage, setUsage] = createSignal<OpenResponsesUsage | undefined>(
+    undefined,
+  );
+  const [sessionTitle, setSessionTitle] = createSignal<string | undefined>(
     undefined,
   );
 
@@ -40,6 +45,12 @@ export const OpenRouterProvider: ParentComponent = (props) => {
     };
 
     addMessage(userMessage);
+
+    if (messages().length === 1) {
+      OpenRouterClient.generateTitle(newMessage)
+        .then(setSessionTitle)
+        .catch(() => {});
+    }
 
     try {
       await OpenRouterClient.callModel({
@@ -69,8 +80,12 @@ export const OpenRouterProvider: ParentComponent = (props) => {
       setIsStreaming(false);
     }
   };
+  const clearSessionTitle = () => setSessionTitle(undefined);
+
   return (
-    <OpenRouterContext.Provider value={{ callModel, isStreaming, usage }}>
+    <OpenRouterContext.Provider
+      value={{ callModel, isStreaming, usage, sessionTitle, clearSessionTitle }}
+    >
       {props.children}
     </OpenRouterContext.Provider>
   );

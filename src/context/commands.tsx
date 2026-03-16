@@ -37,7 +37,7 @@ export const CommandsProvider: ParentComponent = (props) => {
     setEffortPickerVisible,
     setSelectedEffortIndex,
   } = useModel();
-  const { callModel } = useOpenRouter();
+  const { callModel, clearSessionTitle } = useOpenRouter();
 
   const COMMANDS: CommandDefinition[] = [
     {
@@ -45,6 +45,7 @@ export const CommandsProvider: ParentComponent = (props) => {
       description: "Clear conversation history",
       action: () => {
         clearMessages();
+        clearSessionTitle();
         TodoUtil.write(SessionUtil.id, []);
       },
     },

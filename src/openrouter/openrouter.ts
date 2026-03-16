@@ -16,6 +16,7 @@ import {
 
 import { FileScanner } from "../utils/file-scanner";
 import { SystemPrompt } from "../utils/system";
+import { Agent } from "../utils/agent";
 
 type Tool = ReturnType<typeof tool>;
 
@@ -48,6 +49,16 @@ export namespace OpenRouterClient {
 
   function isFreeModel(model: Model): boolean {
     return model.pricing?.prompt === "0";
+  }
+
+  export async function generateTitle(userMessage: string): Promise<string> {
+    const result = openrouter.callModel({
+      model: "openrouter/free",
+      instructions: Agent.TITLE.instructions,
+      input: userMessage,
+    });
+
+    return result.getText();
   }
 
   export async function listModels(): Promise<Model[]> {
