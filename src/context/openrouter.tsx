@@ -23,7 +23,7 @@ export const OpenRouterProvider: ParentComponent = (props) => {
   const { addMessage, messages } = useMessages();
   const { toolsForCurrentAgent, instructionsForCurrentAgent, sessionId } =
     useSession();
-  const { selectedModel, reasoningEnabled } = useModel();
+  const { selectedModel, reasoningEnabled, reasoningEffort } = useModel();
   const [isStreaming, setIsStreaming] = createSignal(false);
   const [usage, setUsage] = createSignal<OpenResponsesUsage | undefined>(
     undefined,
@@ -51,6 +51,7 @@ export const OpenRouterProvider: ParentComponent = (props) => {
         tools: toolsForCurrentAgent(),
         agentInstructions: instructionsForCurrentAgent(),
         reasoningEnabled: reasoningEnabled(),
+        reasoningEffort: reasoningEffort(),
         sessionId: sessionId(),
       });
     } catch (error: unknown) {
