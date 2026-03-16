@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export namespace Tool {
+export namespace ToolUtil {
   export function parseInput<T>(
     schema: z.ZodSchema<T>,
     raw: string,

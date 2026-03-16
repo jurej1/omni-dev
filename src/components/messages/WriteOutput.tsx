@@ -1,12 +1,12 @@
 import { createMemo } from "solid-js";
 import type { FunctionCallOutputMessage } from "../../messages";
-import { Tool, WriteOutputSchema } from "../../tools";
+import { ToolUtil, WriteOutputSchema } from "../../tools";
 import { normalizePath } from "./shared";
 import { ToolOutputBox } from "./ToolOutputBox";
 
 export function WriteOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    Tool.parseOutput(WriteOutputSchema, props.message.output),
+    ToolUtil.parseOutput(WriteOutputSchema, props.message.output),
   );
   const summary = createMemo(
     () =>

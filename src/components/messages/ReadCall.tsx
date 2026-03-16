@@ -1,11 +1,11 @@
 import { createMemo } from "solid-js";
 import type { FunctionCallMessage } from "../../messages";
-import { Tool, ReadInputSchema } from "../../tools";
+import { ToolUtil, ReadInputSchema } from "../../tools";
 import { ToolCallBox } from "./ToolCallBox";
 
 export function ReadCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    Tool.parseInput(ReadInputSchema, props.message.arguments),
+    ToolUtil.parseInput(ReadInputSchema, props.message.arguments),
   );
   const detail = createMemo(() => "");
   return (

@@ -1,11 +1,11 @@
 import { createMemo } from "solid-js";
 import type { FunctionCallOutputMessage } from "../../messages";
-import { Tool, EditOutputSchema } from "../../tools";
+import { ToolUtil, EditOutputSchema } from "../../tools";
 import { ToolOutputBox } from "./ToolOutputBox";
 
 export function EditOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    Tool.parseOutput(EditOutputSchema, props.message.output),
+    ToolUtil.parseOutput(EditOutputSchema, props.message.output),
   );
   const summary = createMemo(() =>
     result()?.success

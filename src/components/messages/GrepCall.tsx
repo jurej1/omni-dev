@@ -1,11 +1,11 @@
 import { createMemo } from "solid-js";
 import type { FunctionCallMessage } from "../../messages";
-import { Tool, GrepInputSchema } from "../../tools";
+import { ToolUtil, GrepInputSchema } from "../../tools";
 import { ToolCallBox } from "./ToolCallBox";
 
 export function GrepCall(props: { message: FunctionCallMessage }) {
   const args = createMemo(() =>
-    Tool.parseInput(GrepInputSchema, props.message.arguments),
+    ToolUtil.parseInput(GrepInputSchema, props.message.arguments),
   );
   const detail = createMemo(() => {
     const parts: string[] = [];

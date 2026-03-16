@@ -4,6 +4,7 @@ import { globTool } from "./glob/glob";
 import { grepTool } from "./grep/grep";
 import { listTool } from "./ls/ls";
 import { readTool } from "./read/read";
+import { skillsTool } from "./skills/skills";
 import { webfetchTool } from "./webfetch/webfetch";
 import { websearchTool } from "./websearch/websearch";
 import { writeTool } from "./write/write";
@@ -18,6 +19,7 @@ export const tools = [
   listTool,
   grepTool,
   globTool,
+  skillsTool,
 ];
 
 export {
@@ -74,4 +76,4 @@ export {
   type ReadInput,
   type ReadMetadata,
 } from "./read/read";
-export { Tool } from "./parse";
+export { ToolUtil } from "./parse";

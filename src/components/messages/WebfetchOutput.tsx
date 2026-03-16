@@ -1,11 +1,11 @@
 import { createMemo } from "solid-js";
 import type { FunctionCallOutputMessage } from "../../messages";
-import { Tool, WebfetchOutputSchema } from "../../tools";
+import { ToolUtil, WebfetchOutputSchema } from "../../tools";
 import { ToolOutputBox } from "./ToolOutputBox";
 
 export function WebfetchOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    Tool.parseOutput(WebfetchOutputSchema, props.message.output),
+    ToolUtil.parseOutput(WebfetchOutputSchema, props.message.output),
   );
   const summary = createMemo(() => {
     const ct = result()?.contentType ?? "";

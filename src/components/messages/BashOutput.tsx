@@ -1,12 +1,12 @@
 import { createMemo } from "solid-js";
 import type { FunctionCallOutputMessage } from "../../messages";
-import { Tool, BashOutputSchema } from "../../tools";
+import { ToolUtil, BashOutputSchema } from "../../tools";
 import { ToolOutputBox } from "./ToolOutputBox";
 import { truncateLines, detectLanguage, syntaxStyle } from "./shared";
 
 export function BashOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
-    Tool.parseOutput(BashOutputSchema, props.message.output),
+    ToolUtil.parseOutput(BashOutputSchema, props.message.output),
   );
   const summary = createMemo(() => {
     if (result()?.timedOut) return "timed out";
