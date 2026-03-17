@@ -20,10 +20,6 @@ const AVAILABLE_AGENTS: Record<string, AgentTool.Definition> = {
 type SessionContextValue = {
   agent: () => AgentTool.Definition;
 
-  // Derived state
-  currentAgentName: () => string;
-  toolsForCurrentAgent: () => Tool[];
-  instructionsForCurrentAgent: () => string;
   sessionId: () => string;
 
   // Actions
@@ -35,14 +31,6 @@ export const SessionContext = createContext<SessionContextValue>();
 export const SessionProvider: ParentComponent = (props) => {
   const [sessionId] = createSignal(SessionUtil.id);
   const [agent, setAgent] = createSignal<AgentTool.Definition>(Agent.BUILD);
-
-  const currentAgentName = createMemo(() => agent().name);
-
-  const toolsForCurrentAgent = createMemo(() => agent().toolsList ?? []);
-
-  const instructionsForCurrentAgent = createMemo(
-    () => agent().instructions ?? "",
-  );
 
   const switchToAgent = (agentName: string) => {
     const next = AVAILABLE_AGENTS[agentName.toLowerCase()];
@@ -62,9 +50,6 @@ export const SessionProvider: ParentComponent = (props) => {
     <SessionContext.Provider
       value={{
         agent,
-        currentAgentName,
-        toolsForCurrentAgent,
-        instructionsForCurrentAgent,
         sessionId,
         switchToAgent,
       }}

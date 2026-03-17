@@ -1,7 +1,6 @@
 import { createContext, createMemo, createSignal, useContext } from "solid-js";
 import type { ParentComponent } from "solid-js";
-import fs from "fs";
-import path from "path";
+
 import { useMessages } from "./messages";
 import { useModel } from "./model";
 import { useOpenRouter } from "./openrouter";
@@ -37,7 +36,8 @@ export const CommandsProvider: ParentComponent = (props) => {
     setEffortPickerVisible,
     setSelectedEffortIndex,
   } = useModel();
-  const { callModel, clearSessionTitle } = useOpenRouter();
+
+  const { callModel, clearSessionTitle, clearUsage } = useOpenRouter();
 
   const COMMANDS: CommandDefinition[] = [
     {
@@ -46,6 +46,7 @@ export const CommandsProvider: ParentComponent = (props) => {
       action: () => {
         clearMessages();
         clearSessionTitle();
+
         TodoUtil.write(SessionUtil.id, []);
       },
     },
@@ -86,7 +87,7 @@ export const CommandsProvider: ParentComponent = (props) => {
     if (!q) return COMMANDS.slice(0, 10);
     return COMMANDS.filter((c) => c.name.toLowerCase().includes(q)).slice(
       0,
-      10,
+      10
     );
   });
 

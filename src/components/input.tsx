@@ -85,7 +85,7 @@ export function Input() {
   let input: TextareaRenderable;
 
   const { callModel, isStreaming } = useOpenRouter();
-  const { agent, currentAgentName, switchToAgent } = useSession();
+  const { agent, switchToAgent } = useSession();
 
   const {
     autocompleteVisible,
@@ -297,7 +297,7 @@ export function Input() {
       }
       if (!autocompleteVisible()) {
         e.preventDefault();
-        const current = currentAgentName().toLowerCase();
+        const current = agent().name.toLowerCase();
         switchToAgent(current === "plan" ? "build" : "plan");
         return;
       }

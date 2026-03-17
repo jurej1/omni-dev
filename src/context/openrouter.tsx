@@ -17,13 +17,14 @@ type OpenRouterContextValue = {
   usage: () => OpenResponsesUsage | undefined;
   sessionTitle: () => string;
   clearSessionTitle: () => void;
+  clearUsage: () => void;
 };
 
 export const OpenRouterContext = createContext<OpenRouterContextValue>();
 
 export const OpenRouterProvider: ParentComponent = (props) => {
   const { addMessage, messages } = useMessages();
-  const { toolsForCurrentAgent, instructionsForCurrentAgent } = useSession();
+  const { agent } = useSession();
   const { selectedModel, reasoningEnabled, reasoningEffort } = useModel();
   const [isStreaming, setIsStreaming] = createSignal(false);
   const [usage, setUsage] = createSignal<OpenResponsesUsage | undefined>(
@@ -58,8 +59,8 @@ export const OpenRouterProvider: ParentComponent = (props) => {
         data: messages(),
         callback: addMessage,
         onUsageData: setUsage,
-        tools: toolsForCurrentAgent(),
-        agentInstructions: instructionsForCurrentAgent(),
+        tools: agent().toolsList,
+        agentInstructions: agent().instructions,
         reasoningEnabled: reasoningEnabled(),
         reasoningEffort: reasoningEffort(),
       });
@@ -80,11 +81,20 @@ export const OpenRouterProvider: ParentComponent = (props) => {
       setIsStreaming(false);
     }
   };
+
   const clearSessionTitle = () => setSessionTitle(undefined);
+  const clearUsage = () => setUsage(undefined);
 
   return (
     <OpenRouterContext.Provider
-      value={{ callModel, isStreaming, usage, sessionTitle, clearSessionTitle }}
+      value={{
+        callModel,
+        isStreaming,
+        usage,
+        sessionTitle,
+        clearSessionTitle,
+        clearUsage,
+      }}
     >
       {props.children}
     </OpenRouterContext.Provider>

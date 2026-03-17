@@ -47,10 +47,6 @@ export namespace OpenRouterClient {
     );
   }
 
-  function isFreeModel(model: Model): boolean {
-    return model.pricing?.prompt === "0";
-  }
-
   export async function generateTitle(userMessage: string): Promise<string> {
     const result = openrouter.callModel({
       model: "openrouter/free",
@@ -115,12 +111,6 @@ export namespace OpenRouterClient {
               },
             }
           : {}),
-        plugins: [
-          {
-            id: "web",
-            enabled: true,
-          },
-        ],
         input: [
           {
             role: "system",
