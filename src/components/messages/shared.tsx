@@ -1,4 +1,4 @@
-import { RGBA, createTextAttributes } from "@opentui/core";
+import { createTextAttributes, SyntaxStyle } from "@opentui/core";
 
 export const bold = createTextAttributes({ bold: true });
 export const dim = createTextAttributes({ dim: true });
@@ -21,6 +21,99 @@ export const theme = {
   accentOrange: "#F0883E",
   accentAmber: "#D29922",
 };
+
+export const syntaxStyle = SyntaxStyle.fromTheme([
+  // Keywords, control flow
+  {
+    scope: ["keyword", "keyword.control", "keyword.operator", "storage.type", "storage.modifier"],
+    style: { foreground: "#D2A8FF", bold: true },
+  },
+  // Functions, methods
+  {
+    scope: ["entity.name.function", "support.function", "meta.function-call"],
+    style: { foreground: "#79C0FF" },
+  },
+  // Types, classes
+  {
+    scope: ["entity.name.type", "entity.name.class", "support.type", "support.class"],
+    style: { foreground: "#F0883E" },
+  },
+  // Strings
+  {
+    scope: ["string", "string.quoted"],
+    style: { foreground: "#7EE787" },
+  },
+  // Numbers, constants
+  {
+    scope: ["constant.numeric", "constant.language", "constant.character"],
+    style: { foreground: "#F0883E" },
+  },
+  // Comments
+  {
+    scope: ["comment", "comment.line", "comment.block"],
+    style: { foreground: "#6e7681", italic: true },
+  },
+  // Variables, parameters
+  {
+    scope: ["variable", "variable.parameter", "variable.other"],
+    style: { foreground: "#E6EDF3" },
+  },
+  // Punctuation
+  {
+    scope: ["punctuation", "meta.brace"],
+    style: { foreground: "#8B949E" },
+  },
+  // Markdown headings
+  {
+    scope: ["markup.heading", "entity.name.section"],
+    style: { foreground: "#79C0FF", bold: true },
+  },
+  // Markdown bold
+  {
+    scope: ["markup.bold"],
+    style: { foreground: "#E6EDF3", bold: true },
+  },
+  // Markdown italic
+  {
+    scope: ["markup.italic"],
+    style: { foreground: "#E6EDF3", italic: true },
+  },
+  // Markdown inline code
+  {
+    scope: ["markup.inline.raw", "markup.raw"],
+    style: { foreground: "#7EE787" },
+  },
+  // Markdown links
+  {
+    scope: ["markup.underline.link", "string.other.link"],
+    style: { foreground: "#D2A8FF", underline: true },
+  },
+  // Markdown list markers
+  {
+    scope: ["punctuation.definition.list"],
+    style: { foreground: "#F0883E" },
+  },
+  // Operators
+  {
+    scope: ["keyword.operator", "punctuation.separator"],
+    style: { foreground: "#D29922" },
+  },
+  // Properties
+  {
+    scope: ["variable.other.property", "support.type.property-name"],
+    style: { foreground: "#79C0FF" },
+  },
+  // Tags (HTML/JSX)
+  {
+    scope: ["entity.name.tag"],
+    style: { foreground: "#7EE787" },
+  },
+  // Attributes
+  {
+    scope: ["entity.other.attribute-name"],
+    style: { foreground: "#D2A8FF" },
+  },
+]);
 
 export type ToolCategory =
   | "filesystem"

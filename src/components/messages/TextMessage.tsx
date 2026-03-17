@@ -1,6 +1,6 @@
 import { createMemo, Show } from "solid-js";
 import type { MessageMessage } from "../../messages";
-import { theme } from "./shared";
+import { theme, syntaxStyle } from "./shared";
 
 export function TextMessage(props: { message: MessageMessage }) {
   const text = createMemo(() =>
@@ -24,11 +24,9 @@ export function TextMessage(props: { message: MessageMessage }) {
       >
         <box paddingLeft={3}>
           <code
-            drawUnstyledText={false}
             filetype="markdown"
+            syntaxStyle={syntaxStyle}
             content={text()}
-            fg={theme.text}
-            streaming={true}
           />
         </box>
       </box>

@@ -1,6 +1,6 @@
 import { createMemo, For, Show } from "solid-js";
 import type { UserMessage as UserMessageType } from "../../messages";
-import { theme, bold, normalizePath } from "./shared";
+import { theme, bold, normalizePath, syntaxStyle } from "./shared";
 
 export function UserMessage(props: { message: UserMessageType }) {
   return (
@@ -22,8 +22,10 @@ export function UserMessage(props: { message: UserMessageType }) {
         <code
           drawUnstyledText={false}
           filetype="markdown"
+          syntaxStyle={syntaxStyle}
           content={props.message.content}
           fg={theme.text}
+          streaming={true}
         />
       </Show>
 
