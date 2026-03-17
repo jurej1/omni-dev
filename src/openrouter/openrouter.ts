@@ -58,7 +58,9 @@ export namespace OpenRouterClient {
       input: userMessage,
     });
 
-    return result.getText();
+    const text = await result.getText();
+
+    return text;
   }
 
   export async function compact(messages: Message[]): Promise<string> {
@@ -105,8 +107,20 @@ export namespace OpenRouterClient {
         instructions: agentInstructions,
         parallelToolCalls: true,
         ...(reasoningEnabled
-          ? { reasoning: { enabled: true, effort: reasoningEffort ?? "high" } }
+          ? {
+              reasoning: {
+                enabled: true,
+                effort: reasoningEffort ?? "medium",
+                summary: "concise",
+              },
+            }
           : {}),
+        plugins: [
+          {
+            id: "web",
+            enabled: true,
+          },
+        ],
         input: [
           {
             role: "system",
