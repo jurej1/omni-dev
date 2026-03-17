@@ -2,7 +2,7 @@ import { createMemo } from "solid-js";
 import type { FunctionCallOutputMessage } from "../../messages";
 import { ToolUtil, BashOutputSchema } from "../../tools";
 import { ToolOutputBox } from "./ToolOutputBox";
-import { truncateLines, detectLanguage, syntaxStyle } from "./shared";
+import { truncateLines } from "./shared";
 
 export function BashOutput(props: { message: FunctionCallOutputMessage }) {
   const result = createMemo(() =>
@@ -19,7 +19,6 @@ export function BashOutput(props: { message: FunctionCallOutputMessage }) {
     if (!out.trim()) return "";
     return truncateLines(out, 15);
   });
-  const lang = createMemo(() => detectLanguage(preview()));
   return (
     <ToolOutputBox icon="$" summary={summary()}>
       <box
@@ -29,9 +28,7 @@ export function BashOutput(props: { message: FunctionCallOutputMessage }) {
         maxHeight={12}
         gap={1}
       >
-        <syntax language={lang()} syntaxStyle={syntaxStyle}>
-          {preview()}
-        </syntax>
+        <text>{preview()}</text>
       </box>
     </ToolOutputBox>
   );

@@ -5,7 +5,7 @@ import {
   ParentComponent,
   useContext,
 } from "solid-js";
-import { type MessageItem } from "../messages";
+import { FunctionCallMessage, type MessageItem } from "../messages";
 import { logger } from "../logger";
 
 export type Message = MessageItem & { id: string };
@@ -23,16 +23,30 @@ export const MessagesProvider: ParentComponent = (props) => {
 
   const addMessage = (message: Message) => {
     setMessages((prev) => {
-      const existingIndex = prev.findIndex((m) => m.id === message.id);
+      const enriched =
+        message.type === "function_call_output" && !message.functionName
+          ? {
+              ...message,
+              functionName: (
+                prev.find(
+                  (m) =>
+                    m.type === "function_call" && m.callId === message.callId,
+                ) as FunctionCallMessage
+              ).name,
+            }
+          : message;
+
+      const existingIndex = prev.findIndex((m) => m.id === enriched.id);
 
       if (existingIndex === -1) {
-        return [...prev, message];
+        return [...prev, enriched];
       }
 
-      const existing = prev[existingIndex];
-
       const updated = [...prev];
-      updated[existingIndex] = { ...existing, ...message };
+      updated[existingIndex] = {
+        ...prev[existingIndex],
+        ...enriched,
+      } as Message;
       return updated;
     });
   };

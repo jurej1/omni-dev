@@ -57,8 +57,7 @@ export const FunctionCallOutputSchema = z.object({
   id: z.string().nullish(),
   callId: z.string(),
   output: z.string(),
-  status: MessageStatusSchema.nullish(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
+  functionName: z.string().optional(),
 });
 
 export const MessageUnionSchema = z.union([

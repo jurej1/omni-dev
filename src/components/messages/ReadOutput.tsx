@@ -1,7 +1,6 @@
 import { createMemo } from "solid-js";
 import type { FunctionCallOutputMessage } from "../../messages";
 
-import { detectLanguage, syntaxStyle } from "./shared";
 import { ToolOutputBox } from "./ToolOutputBox";
 
 export function ReadOutput(props: { message: FunctionCallOutputMessage }) {
@@ -19,15 +18,10 @@ export function ReadOutput(props: { message: FunctionCallOutputMessage }) {
       (lines.length > maxPreviewLines ? "\n… (truncated)" : "")
     );
   });
-  const lang = createMemo(() =>
-    detectLanguage(props.message.output.slice(0, 1000)),
-  );
   return (
     <ToolOutputBox icon="📄" summary="File contents (preview)">
       <box paddingLeft={3} paddingTop={1} paddingBottom={1} maxHeight={15}>
-        <syntax language={lang()} syntaxStyle={syntaxStyle}>
-          {preview()}
-        </syntax>
+        <text>{preview()}</text>
       </box>
     </ToolOutputBox>
   );

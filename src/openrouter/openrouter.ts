@@ -1,7 +1,6 @@
-import { OpenRouter, tool } from "@openrouter/sdk";
+import { OpenRouter, tool, stepCountIs } from "@openrouter/sdk";
 import type { Model } from "@openrouter/sdk/esm/models/model";
 import { tools } from "../tools";
-import { MessageStatus } from "../messages";
 import type { ReasoningEffort } from "../context/model";
 import { Message } from "../context/messages";
 import { logger } from "../logger";
@@ -123,13 +122,10 @@ export namespace OpenRouterClient {
           ...mapMessages(data),
         ],
         tools: toolsList,
+        stopWhen: stepCountIs(100000000000000),
       });
 
       for await (const item of result.getItemsStream()) {
-        if (item.status === "completed") {
-          await saveRawOutput(item);
-        }
-
         switch (item.type) {
           case "message":
             callback({
@@ -166,7 +162,6 @@ export namespace OpenRouterClient {
               id: item.id,
               callId: item.callId,
               output: item.output,
-              status: item.status as MessageStatus | undefined,
             });
             break;
           }

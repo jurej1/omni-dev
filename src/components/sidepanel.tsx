@@ -95,7 +95,7 @@ export function Sidepanel() {
       {/* Session Title */}
       <Show when={sessionTitle()}>
         <text fg={theme.accent} attributes={bold}>
-          {sessionTitle()}
+          {sessionTitle().trim()}
         </text>
       </Show>
 

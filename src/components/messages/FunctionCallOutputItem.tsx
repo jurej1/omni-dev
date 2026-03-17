@@ -17,9 +17,7 @@ import { GetTodosOutput } from "./GetTodosOutput";
 export function FunctionCallOutputItem(props: {
   message: FunctionCallOutputMessage;
 }) {
-  const toolName = createMemo(
-    () => (props.message.metadata?.name as string | undefined) ?? "",
-  );
+  const toolName = createMemo(() => props.message.functionName ?? "");
 
   return (
     <Switch
