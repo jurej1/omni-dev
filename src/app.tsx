@@ -8,6 +8,8 @@ import { OpenRouterProvider } from "./context/openrouter";
 import { AutocompleteProvider } from "./context/autocomplete";
 import { CommandsProvider } from "./context/commands";
 import { Colors } from "./utils/colors";
+import { QuestionPrompt } from "./components/question-prompt";
+import { QuestionProvider } from "./context/question";
 
 export function App() {
   return (
@@ -17,7 +19,9 @@ export function App() {
           <OpenRouterProvider>
             <AutocompleteProvider>
               <CommandsProvider>
-                <AppShell />
+                <QuestionProvider>
+                  <AppShell />
+                </QuestionProvider>
               </CommandsProvider>
             </AutocompleteProvider>
           </OpenRouterProvider>
@@ -43,6 +47,7 @@ function AppShell() {
           <Messages />
         </box>
         <box flexShrink={0} width={"100%"}>
+          <QuestionPrompt />
           <Input />
         </box>
       </box>

@@ -16,6 +16,7 @@ import { websearchTool } from "../tools/websearch/websearch";
 import { webfetchTool } from "../tools/webfetch/webfetch";
 import { getTodosTool, writeTodosTool } from "../tools/todo/todo";
 import { tools } from "../tools";
+import { questionTool } from "../tools/question/question";
 
 type Tool = ReturnType<typeof tool>;
 
@@ -39,9 +40,18 @@ export namespace AgentTool {
     color: string,
     label: string,
     sigil: string,
-    hidden?: boolean,
+    hidden?: boolean
   ): Definition {
-    return { name, description, instructions, toolsList, color, label, sigil, hidden };
+    return {
+      name,
+      description,
+      instructions,
+      toolsList,
+      color,
+      label,
+      sigil,
+      hidden,
+    };
   }
 }
 
@@ -59,10 +69,11 @@ export namespace Agent {
       webfetchTool,
       writeTodosTool,
       getTodosTool,
+      questionTool,
     ],
     "#a78bfa",
     "PLAN",
-    "◈",
+    "◈"
   );
 
   export const BUILD = AgentTool.define(
@@ -72,7 +83,7 @@ export namespace Agent {
     tools,
     "#34d399",
     "BUILD",
-    "◆",
+    "◆"
   );
 
   export const EXPLORE = AgentTool.define(
@@ -86,10 +97,11 @@ export namespace Agent {
       listTool,
       websearchTool,
       webfetchTool,
+      questionTool,
     ],
     "#60a5fa",
     "EXPLORE",
-    "◎",
+    "◎"
   );
 
   export const GENERAL = AgentTool.define(
@@ -99,7 +111,7 @@ export namespace Agent {
     tools,
     "#f59e0b",
     "GENERAL",
-    "◉",
+    "◉"
   );
 
   export const COMPACTION = AgentTool.define(
@@ -110,7 +122,7 @@ export namespace Agent {
     "#6b7280",
     "COMPACT",
     "⊙",
-    true,
+    true
   );
 
   export const TITLE = AgentTool.define(
@@ -120,8 +132,8 @@ export namespace Agent {
     [],
     "#6b7280",
     "TITLE",
-    "⊤",
-    true,
+    "T",
+    true
   );
 
   export const SUMMARY = AgentTool.define(
@@ -132,6 +144,6 @@ export namespace Agent {
     "#6b7280",
     "SUMMARY",
     "∑",
-    true,
+    true
   );
 }
