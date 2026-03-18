@@ -7,6 +7,7 @@ import GENERAL_INSTRUCTIONS from "../prompts/general.txt";
 import COMPACTION_INSTRUCTIONS from "../prompts/compaction.txt";
 import TITLE_INSTRUCTIONS from "../prompts/title.txt";
 import SUMMARY_INSTRUCTIONS from "../prompts/summary.txt";
+import CODE_REVIEW_INSTRUCTIONS from "../prompts/review.txt";
 
 import { readTool } from "../tools/read/read";
 import { globTool } from "../tools/glob/glob";
@@ -145,5 +146,15 @@ export namespace Agent {
     "SUMMARY",
     "∑",
     true
+  );
+
+  export const CODE_REVIEW = AgentTool.define(
+    "code_review",
+    "Reviews code for bugs, security issues, performance problems, and quality improvements.",
+    CODE_REVIEW_INSTRUCTIONS,
+    tools,
+    "#f87171",
+    "REVIEW",
+    "◐"
   );
 }

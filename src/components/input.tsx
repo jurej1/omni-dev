@@ -297,8 +297,10 @@ export function Input() {
       }
       if (!autocompleteVisible()) {
         e.preventDefault();
+        const agents = ["plan", "build", "code_review"];
         const current = agent().name.toLowerCase();
-        switchToAgent(current === "plan" ? "build" : "plan");
+        const idx = agents.indexOf(current);
+        switchToAgent(agents[(idx + 1) % agents.length]);
         return;
       }
       e.preventDefault();

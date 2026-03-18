@@ -15,6 +15,7 @@ type Tool = ReturnType<typeof tool>;
 const AVAILABLE_AGENTS: Record<string, AgentTool.Definition> = {
   plan: Agent.PLAN,
   build: Agent.BUILD,
+  code_review: Agent.CODE_REVIEW,
 };
 
 type SessionContextValue = {
@@ -37,7 +38,9 @@ export const SessionProvider: ParentComponent = (props) => {
 
     if (!next) {
       throw new Error(
-        `Unknown agent: ${agentName}. Available agents: ${Object.keys(AVAILABLE_AGENTS).join(", ")}`,
+        `Unknown agent: ${agentName}. Available agents: ${Object.keys(
+          AVAILABLE_AGENTS
+        ).join(", ")}`
       );
     }
 
