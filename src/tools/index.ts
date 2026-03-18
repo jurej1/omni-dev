@@ -3,6 +3,7 @@ import { editTool } from "./edit/edit";
 import { globTool } from "./glob/glob";
 import { grepTool } from "./grep/grep";
 import { listTool } from "./ls/ls";
+import { questionTool } from "./question/question";
 import { readTool } from "./read/read";
 import { skillsTool } from "./skills/skills";
 import { taskTool } from "./task/task";
@@ -25,6 +26,7 @@ export const tools = [
   writeTodosTool,
   getTodosTool,
   taskTool,
+  questionTool,
 ];
 
 export {

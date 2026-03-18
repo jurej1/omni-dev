@@ -1,32 +1,37 @@
 import { tool } from "@openrouter/sdk";
-import { z } from "zod";
-import { publishQuestionsAsk, subscribeQuestionsAnswers } from "../../events";
+import { Question } from "../../utils/question";
+import z from "zod";
+import DESCRIPTION from "./question.txt";
 
-export const QuestionInputSchema = z.object({
-  questions: z.array(z.string()).min(1).describe("List of questions to ask the user"),
+const QuestionToolOutputSchema = z.object({
+  title: z.string(),
+  output: z.string(),
+  answers: z.array(z.string()),
 });
-export type QuestionInput = z.infer<typeof QuestionInputSchema>;
-
-export const QuestionOutputSchema = z.object({
-  answers: z.array(z.string()).describe("User answers in the same order as questions"),
-});
-export type QuestionOutput = z.infer<typeof QuestionOutputSchema>;
 
 export const questionTool = tool({
-  name: "AskUserQuestion",
-  description: "Ask the user one or more questions and wait for their answers before continuing.",
-  inputSchema: QuestionInputSchema,
-  outputSchema: QuestionOutputSchema,
-  execute: async ({ questions }) => {
-    const answers = await new Promise<string[]>((resolve) => {
-      const unsub = subscribeQuestionsAnswers((data) => {
-        unsub();
-        resolve(data);
-      });
+  name: "question",
+  description: DESCRIPTION,
+  inputSchema: Question.Request,
+  outputSchema: QuestionToolOutputSchema,
+  execute: async (params) => {
+    const answers = await Question.ask(params.questions);
 
-      publishQuestionsAsk(questions);
-    });
+    function format(answer: string) {
+      if (answer.length === 0) return "Unanwsered";
+      return answers.join(", ");
+    }
 
-    return { answers };
+    const formatted = params.questions
+      .map((q, i) => `"${q}"="${format(answers[i])}"`)
+      .join(", ");
+
+    return {
+      title: `Asked ${params.questions.length} question${
+        params.questions.length > 1 ? "s" : ""
+      }`,
+      output: `User has answered your questions: ${formatted}. You can now continue with the user's answers in mind.`,
+      answers: answers,
+    };
   },
 });

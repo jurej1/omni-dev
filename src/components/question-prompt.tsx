@@ -1,104 +1,69 @@
-import { createSignal, For, onCleanup, Show } from "solid-js";
-import { subscribeQuestionsAsk, publishQuestionsAnswers } from "../events";
-import { createTextAttributes, KeyEvent, TextareaRenderable } from "@opentui/core";
+import { createSignal, For, Show } from "solid-js";
+import { useQuestion } from "../context/question";
+import { TextareaRenderable, KeyEvent } from "@opentui/core";
 import { Colors } from "../utils/colors";
 
-const bold = createTextAttributes({ bold: true });
-const dim = createTextAttributes({ dim: true });
-
 export function QuestionPrompt() {
-  const [questions, setQuestions] = createSignal<string[]>([]);
-  const [answers, setAnswers] = createSignal<string[]>([]);
+  const { questions, reply } = useQuestion();
   const [currentIndex, setCurrentIndex] = createSignal(0);
-  let input: TextareaRenderable;
+  const [collectedAnswers, setCollectedAnswers] = createSignal<string[]>([]);
 
-  const unsub = subscribeQuestionsAsk((qs) => {
-    setQuestions(qs);
-    setAnswers([]);
-    setCurrentIndex(0);
-  });
+  let textarea: TextareaRenderable;
 
-  onCleanup(unsub);
+  function handleKeyDown(e: KeyEvent) {
+    if (e.name?.toLowerCase() !== "return") return;
+    e.preventDefault();
 
-  const isActive = () => questions().length > 0;
-  const current = () => questions()[currentIndex()];
+    const answer = textarea.plainText.trim();
+    const qs = questions();
+    const idx = currentIndex();
+    const updated = [...collectedAnswers(), answer];
 
-  const submit = () => {
-    const text = input?.plainText?.trim() ?? "";
-    const next = [...answers(), text];
-
-    if (currentIndex() < questions().length - 1) {
-      setAnswers(next);
-      setCurrentIndex((i) => i + 1);
-      input?.clear();
+    if (idx < qs.length - 1) {
+      setCollectedAnswers(updated);
+      setCurrentIndex(idx + 1);
+      textarea.clear();
     } else {
-      publishQuestionsAnswers(next);
-      setQuestions([]);
-      setAnswers([]);
+      reply(updated);
+      setCollectedAnswers([]);
       setCurrentIndex(0);
-      input?.clear();
+      textarea.clear();
     }
-  };
-
-  const handleKeyDown = (e: KeyEvent) => {
-    if (e.name?.toLowerCase() === "escape") {
-      e.preventDefault();
-      publishQuestionsAnswers([...answers(), ""]);
-      setQuestions([]);
-      setAnswers([]);
-      setCurrentIndex(0);
-      input?.clear();
-    }
-  };
+  }
 
   return (
-    <Show when={isActive()}>
+    <Show when={questions().length > 0}>
       <box
+        flexDirection="column"
         borderStyle="single"
         borderColor={Colors.streamingColor}
-        flexDirection="column"
+        paddingLeft={1}
+        paddingRight={1}
         gap={1}
-        padding={1}
       >
-        <box flexDirection="row" gap={1} alignItems="center">
-          <text fg={Colors.streamingColor} attributes={bold}>
-            ?
+        <For each={questions()}>
+          {(question, i) => (
+            <Show when={i() < currentIndex()}>
+              <box flexDirection="row" gap={1}>
+                <text fg={Colors.blueGray}>{question}</text>
+                <text fg={Colors.streamingColor}>{collectedAnswers()[i()]}</text>
+              </box>
+            </Show>
+          )}
+        </For>
+
+        <box flexDirection="column" gap={1}>
+          <text fg={Colors.streamingColor}>
+            [{currentIndex() + 1}/{questions().length}] {questions()[currentIndex()]}
           </text>
-          <text fg="#E6EDF3" attributes={bold}>
-            {currentIndex() + 1}/{questions().length}
-          </text>
-          <text fg="#6e7681" attributes={dim}>
-            (esc to skip remaining)
-          </text>
+          <textarea
+            focused={true}
+            minHeight={1}
+            maxHeight={4}
+            onKeyDown={handleKeyDown}
+            ref={textarea}
+          />
         </box>
-
-        <text fg="#E6EDF3">{current()}</text>
-
-        <Show when={answers().length > 0}>
-          <box flexDirection="column" gap={0}>
-            <For each={answers()}>
-              {(ans, i) => (
-                <box flexDirection="row" gap={1}>
-                  <text fg="#6e7681" attributes={dim}>
-                    {i() + 1}.
-                  </text>
-                  <text fg="#4ade80">{ans}</text>
-                </box>
-              )}
-            </For>
-          </box>
-        </Show>
-
-        <textarea
-          focused={true}
-          placeholder="Type your answer…"
-          minHeight={1}
-          maxHeight={4}
-          onSubmit={submit}
-          onKeyDown={handleKeyDown}
-          onMouseDown={(e) => e.target.focus()}
-          ref={input}
-        />
       </box>
     </Show>
   );
