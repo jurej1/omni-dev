@@ -2,5 +2,6 @@ Use this tool when you need to ask the user questions during execution. This all
 1. Gather user preferences or requirements
 2. Clarify ambiguous instructions
 3. Get decisions on implementation choices as you work
-4. Offer choices to the user about what direction to take.
+4. You can ask multiple questions at the time.
+
 
